@@ -3,3 +3,5 @@
 	* Creating repository for simple study of shower properties in various mediums
 	* Adding basic detector construction
 	* Including skeleton of executable
+	* Adding makefile copied from ELS_mrelich
+	* Adding physics list -- right now just gamma, e+, e-, and some EM physics processes
