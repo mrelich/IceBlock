@@ -50,7 +50,9 @@ class PhysicsList : public G4VUserPhysicsList
   // Construct Processes
   void ConstructProcess();
   void ConstructEM();
-   
+
+  // Set cuts
+  void SetCuts();
 
 
 };

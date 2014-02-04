@@ -52,9 +52,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // right side of the world volume.  World volume is 2*km cube
   // and the iceblock is a 1*km cube set such that ice is offset
   // So particles should be input at 0,0,0
-  particleGun->SetParticlePosition(G4ThreeVector(0.*cm,
-						 0.*cm,
-						 0.*cm));
+  particleGun->SetParticlePosition(G4ThreeVector(0*mm,0*mm,0*mm));  
   particleGun->GeneratePrimaryVertex(anEvent);
 
 }

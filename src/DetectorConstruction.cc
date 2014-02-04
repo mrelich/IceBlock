@@ -84,9 +84,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create the giant iceblock
   //
   
-  G4double iceblock_x = 1000.0 * m;
-  G4double iceblock_y = 1000.0 * m;
-  G4double iceblock_z = 1000.0 * m;
+  G4double iceblock_x = 1500.0 * m;
+  G4double iceblock_y = 1500.0 * m;
+  G4double iceblock_z = 1500.0 * m;
 
   // Iceblock is a box
   G4Box* iceblock_box = new G4Box("ICEBLOCK",
@@ -102,7 +102,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   // Physical volume
   m_iceblock_phys = new G4PVPlacement(0,                             // no rotation
-				      G4ThreeVector(0,0,1000.0 * m), // shifted z->1km
+				      G4ThreeVector(),
 				      m_iceblock_log,                 // its logical volume
 				      "iceblock_phys",                // name
 				      m_world_log,                   // Mother Volume

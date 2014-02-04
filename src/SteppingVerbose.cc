@@ -7,6 +7,8 @@
 SteppingVerbose::SteppingVerbose()
 {
 
+  outputFile.open("outputfile.dat",ofstream::out);
+
 }
 
 //-----------------------------------------------------------------//
@@ -14,6 +16,8 @@ SteppingVerbose::SteppingVerbose()
 //-----------------------------------------------------------------//
 SteppingVerbose::~SteppingVerbose()
 {
+
+  outputFile.close();
 
 }
 
@@ -26,6 +30,21 @@ void SteppingVerbose::StepInfo()
   // Necessary
   CopyState();
 
+  //
+  // Dump some basic info
+  //
+
+  outputFile <<
+    fTrack->GetVolume()->GetName()<<" "<<
+    fStep->GetPostStepPoint()->GetPosition().x()/cm <<" "<<
+    fStep->GetPostStepPoint()->GetPosition().y()/cm <<" "<<
+    fStep->GetPostStepPoint()->GetPosition().z()/cm <<" "<<
+    fTrack->GetKineticEnergy()/MeV<<" "<<
+    fTrack->GetParticleDefinition()->GetPDGEncoding()<<" "<<
+    fTrack->GetTrackID()<<" "<<
+    fTrack->GetParentID()<<" "<<
+    G4endl;
+  
 }
 
 //-----------------------------------------------------------------//

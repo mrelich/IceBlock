@@ -5,6 +5,10 @@
 #include "G4SteppingManager.hh"
 #include "G4UnitsTable.hh"
 
+#include <fstream>
+
+using namespace std;
+
 class SteppingVerbose : public G4SteppingVerbose
 {
 
@@ -20,6 +24,10 @@ class SteppingVerbose : public G4SteppingVerbose
   // Access Tracking info
   void TrackingStarted();
 
+ protected:
+
+  ofstream outputFile;   // temporary output file
+  
 };
 
 #endif

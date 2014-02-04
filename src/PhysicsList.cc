@@ -106,7 +106,7 @@ void PhysicsList::ConstructProcess()
 
   // Turn on processes here.  Right now ONLY considering
   // the electromagnetic stuff.
-
+  ConstructEM();
 }
 
 //-----------------------------------------------------------------//
@@ -187,4 +187,17 @@ void PhysicsList::ConstructEM()
   }
   
   
+}
+
+
+//-----------------------------------------------------------------//
+// Set Cuts
+//-----------------------------------------------------------------//
+void PhysicsList::SetCuts()
+{
+
+  SetCutsWithDefault();
+  
+  DumpCutValuesTable();
+
 }
