@@ -5,3 +5,4 @@
 	* Including skeleton of executable
 	* Adding makefile copied from ELS_mrelich
 	* Adding physics list -- right now just gamma, e+, e-, and some EM physics processes
+	* Adding run and event action
