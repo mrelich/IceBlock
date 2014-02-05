@@ -1,4 +1,6 @@
-
+2014-02-05 Matt:
+	* Adding output directory for output files
+	
 2014-02-04 Matt:
 	* Creating repository for simple study of shower properties in various mediums
 	* Adding basic detector construction
@@ -8,3 +10,5 @@
 	* Adding run and event action
 	* Adding primary action generator
 	* Adding stepping action
+	* Updated ice placment... just have particle gun inside the ice, easier to impliment
+	* Have some simple information dumping
