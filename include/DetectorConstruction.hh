@@ -12,12 +12,20 @@
 #include "globals.hh"
 #include "G4NistManager.hh"
 
+enum Material
+{
+  Mat_ICE = 0,
+  Mat_LEAD,
+  Mat_IRON,
+  Mat_N
+};
+
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
 
  public:
   
-  DetectorConstruction();
+  DetectorConstruction(G4int detMaterial);
   ~DetectorConstruction();
 
   G4VPhysicalVolume* Construct();
@@ -31,6 +39,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   // Physical volumes
   G4VPhysicalVolume* m_world_phys;
   G4VPhysicalVolume* m_iceblock_phys;
+
+  // The detector material
+  G4int m_detMaterial;
   
 };
 

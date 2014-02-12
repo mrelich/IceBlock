@@ -54,7 +54,6 @@ class PhysicsList : public G4VUserPhysicsList
   // Set cuts
   void SetCuts();
 
-
 };
 
 #endif

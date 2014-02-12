@@ -4,7 +4,9 @@
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC) :
+PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC, 
+					       G4float partEnergy,
+					       std::string partType) :
   myDetector(NULL)
 {
 
@@ -23,11 +25,11 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC) :
   // specify the particle to be used
   //
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4ParticleDefinition* particle = particleTable->FindParticle("e-"); // TODO make customizable
+  G4ParticleDefinition* particle = particleTable->FindParticle(partType.c_str());
 
   particleGun->SetParticleDefinition(particle);
   particleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.)); // z-direction
-  particleGun->SetParticleEnergy(1.0*GeV);  // TODO make customizable
+  particleGun->SetParticleEnergy(partEnergy);
   
 
 }

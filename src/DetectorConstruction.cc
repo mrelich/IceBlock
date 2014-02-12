@@ -4,12 +4,16 @@
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
-DetectorConstruction::DetectorConstruction() :
+DetectorConstruction::DetectorConstruction(G4int detMat) :
   m_world_log(NULL),
   m_iceblock_log(NULL),
   m_world_phys(NULL),
-  m_iceblock_phys(NULL)
+  m_iceblock_phys(NULL),
+  m_detMaterial(0)
 {
+
+  // Set detector material
+  m_detMaterial = detMat;
 
 }
 
@@ -41,17 +45,35 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4int nel;
 
   // Add some elements
-  G4Element* H   = new G4Element("Hydrogen", "H", z=1., a=1.00794*g/mole );
-  G4Element* O   = new G4Element("Oxygen"  , "O", z=8., a= 16.00*g/mole  );
-
+  G4Element* H   = new G4Element("Hydrogen", "H" , z=1. , a=1.00794*g/mole );
+  G4Element* O   = new G4Element("Oxygen"  , "O" , z=8. , a= 16.00*g/mole  );
+  G4Element* Pb  = new G4Element("Lead"    , "Pb", z=82., a= 207.19*g/mole    );
+  G4Element* Fe  = new G4Element("Iron"    , "Fe", z=26., a= 55.845*g/mole    );
+  
   //
   // Create Material for the detector.
   //
 
-  G4Material* ICE =  new G4Material("ICE", density=0.920*g/cm3, nel=2,
-  kStateSolid, 216.15*kelvin); 
-  ICE->AddElement(H, 2 );
-  ICE->AddElement(O, 1 );
+  G4Material* det;
+  if( m_detMaterial == Mat_LEAD ){
+    det =  new G4Material("LEAD", density=11.3*g/cm3, nel=1,
+			  kStateSolid, 290.*kelvin); 
+    det->AddElement(Pb, 1 );
+    
+  }
+  else if( m_detMaterial == Mat_IRON ){
+    det =  new G4Material("IRON", density=7.874*g/cm3, nel=1,
+			  kStateSolid, 290.*kelvin); 
+    det->AddElement(Fe, 1 );
+    
+  }
+  else{ // default is ice
+    det =  new G4Material("ICE", density=0.920*g/cm3, nel=2,
+			  kStateSolid, 216.15*kelvin); 
+    det->AddElement(H, 2 );
+    det->AddElement(O, 1 );
+
+  }
 
   //
   // Create the world volume
@@ -96,7 +118,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   // Logical volume
   m_iceblock_log = new G4LogicalVolume(iceblock_box,
-				      ICE,
+				      det,
 				      "iceblock_log");
  
 

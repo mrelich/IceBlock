@@ -15,7 +15,7 @@ class SteppingVerbose : public G4SteppingVerbose
  public:
 
   // Constructor / Destructor
-  SteppingVerbose();
+  SteppingVerbose(string outputName);
   ~SteppingVerbose();
 
   // Access step info
@@ -27,6 +27,9 @@ class SteppingVerbose : public G4SteppingVerbose
  protected:
 
   ofstream outputFile;   // temporary output file
+
+  G4int m_createdProc;
+  G4int m_event;
   
 };
 
