@@ -57,9 +57,8 @@ void SteppingVerbose::StepInfo()
            == "conv" ) ProcessID=6;
   else if(fStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()
 	  == "muIoni" ) ProcessID = 1;
-  else ProcessID=-100;
+  else return; // ProcessID=-100;
   
-
   outputFile <<
     //fStep->GetPostStepPoint()->GetPosition().x()/cm <<" "<<
     //fStep->GetPostStepPoint()->GetPosition().y()/cm <<" "<<
@@ -69,8 +68,8 @@ void SteppingVerbose::StepInfo()
     fStep->GetPreStepPoint()->GetPosition().z()/cm <<" "<<
     fStep->GetStepLength()/cm <<" "<<
     fTrack->GetKineticEnergy()/MeV<<" "<<
-    //fStep->GetTotalEnergyDeposit()/MeV<<" "<<
-    (fStep->GetTotalEnergyDeposit() - fStep->GetNonIonizingEnergyDeposit())/MeV<<" "<<
+    fStep->GetTotalEnergyDeposit()/MeV<<" "<<
+    //(fStep->GetTotalEnergyDeposit() - fStep->GetNonIonizingEnergyDeposit())/MeV<<" "<<
     fTrack->GetParticleDefinition()->GetPDGEncoding()<<" "<<
     fTrack->GetTrackID()<<" "<<
     fTrack->GetParentID()<<" "<<
@@ -78,7 +77,6 @@ void SteppingVerbose::StepInfo()
     ProcessID<<" "<<
     //fStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()<<" "<<
     G4endl;
-  
 }
 
 //-----------------------------------------------------------------//

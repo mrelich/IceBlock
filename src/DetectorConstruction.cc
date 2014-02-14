@@ -92,7 +92,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   m_world_log = new G4LogicalVolume(world_box, 
 				    Air, 
 				    "world_log");
-  
+
   // Physical volume
   m_world_phys = new G4PVPlacement(0,                // no rotation
 				   G4ThreeVector(),  // at (0,0,0)
@@ -120,7 +120,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   m_iceblock_log = new G4LogicalVolume(iceblock_box,
 				      det,
 				      "iceblock_log");
- 
+
+  // Try adding User limits.
+  // UPDATE: Doesn't seem to impact results at all...
+  //m_iceblock_log->SetUserLimits(new G4UserLimits(DBL_MAX,   // stepMax
+  //DBL_MAX,   // trackMax
+  //DBL_MAX,   // timeMax
+  //0.611*MeV, // kinMin
+  ////100.0*MeV, // kinMin
+  //0)         // rangeMin
+  //);
 
   // Physical volume
   m_iceblock_phys = new G4PVPlacement(0,                             // no rotation

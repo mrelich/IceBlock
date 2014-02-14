@@ -1,6 +1,8 @@
 #ifndef PhysicsList_h
 #define PhysicsList_h
 
+#include "G4SystemOfUnits.hh"
+
 #include "G4VUserPhysicsList.hh"
 #include "globals.hh"
 #include "G4ParticleTypes.hh"
@@ -31,6 +33,8 @@
 
 #include "G4ionIonisation.hh"
 
+#include "G4EmStandardPhysics.hh"
+
 class PhysicsList : public G4VUserPhysicsList
 {
 
@@ -53,6 +57,8 @@ class PhysicsList : public G4VUserPhysicsList
 
   // Set cuts
   void SetCuts();
+
+  G4EmStandardPhysics* emStandard;
 
 };
 

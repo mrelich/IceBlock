@@ -1,11 +1,15 @@
 
 #include "PhysicsList.hh"
+#include "G4ProcessManager.hh"
+#include "G4UserSpecialCuts.hh"
 
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
 PhysicsList::PhysicsList()
 {
+
+  emStandard = new G4EmStandardPhysics();
 
 }
 
@@ -14,6 +18,8 @@ PhysicsList::PhysicsList()
 //-----------------------------------------------------------------//
 PhysicsList::~PhysicsList()
 {
+
+  delete emStandard;
 
 }
 
@@ -26,14 +32,19 @@ void PhysicsList::ConstructParticle()
   // Need the geantino for transportation
   G4Geantino::GeantinoDefinition();
   G4ChargedGeantino::ChargedGeantinoDefinition();
-  
+
+  // Try to see if error in my EM def
+  // UPDATE: Doesn't have any difference.
+  emStandard->ConstructParticle();
+
   // Initialize bosons
   ConstructBosons();
 
   // Initialize leptons
   ConstructLeptons();
 
-  // Initialize hadrons (commented out for now)
+  // Initialize hadrons 
+  // Commented out for now, only looking at EM shower
   //ConstructHadrons();
   
 }
@@ -62,6 +73,7 @@ void PhysicsList::ConstructLeptons()
   G4Positron::PositronDefinition();
 
   // Muon
+  // Needed for using Muon Beam
   G4MuonPlus::MuonPlusDefinition();
   G4MuonMinus::MuonMinusDefinition();
 
@@ -116,6 +128,9 @@ void PhysicsList::ConstructProcess()
   // the electromagnetic stuff.
   ConstructEM();
 
+  // For a cross-check on my EM
+  //emStandard->ConstructProcess();
+
 }
 
 //-----------------------------------------------------------------//
@@ -124,20 +139,20 @@ void PhysicsList::ConstructProcess()
 void PhysicsList::ConstructEM()
 {
 
+
   // Copying from Example02 in novice geant4 examples
   G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
   
+  ph->RegisterProcess(new G4UserSpecialCuts(), G4Gamma::GammaDefinition());
+  ph->RegisterProcess(new G4UserSpecialCuts(), G4Electron::ElectronDefinition());
+  ph->RegisterProcess(new G4UserSpecialCuts(), G4Positron::PositronDefinition());
+  
+
   theParticleIterator->reset();
   while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
-    
-    // NOTE:
-    // This should only be set if we are running on ice
-    // in order to match the papers results.
-    // Update: Only turned on for gamma/e/p so as to avoid print out
-
-    
+    G4ParticleDefinition* particle = theParticleIterator->value();        
     G4String particleName = particle->GetParticleName();
+    //G4ProcessManager* pmanager = particle->GetProcessManager();
 
     // Gamma
     if (particleName == "gamma" ) {
@@ -145,6 +160,8 @@ void PhysicsList::ConstructEM()
       ph->RegisterProcess(new G4ComptonScattering,   particle);
       ph->RegisterProcess(new G4GammaConversion,     particle);
       particle->SetApplyCutsFlag(true);
+      //pmanager->AddDiscreteProcess(new G4UserSpecialCuts());
+      //ph->RegisterProcess(new G4UserSpecialCuts(), particle);
     }
     // Electron
     else if (particleName == "e-") {
@@ -152,6 +169,8 @@ void PhysicsList::ConstructEM()
       ph->RegisterProcess(new G4eIonisation,         particle);
       ph->RegisterProcess(new G4eBremsstrahlung,     particle);      
       particle->SetApplyCutsFlag(true);
+      //ph->RegisterProcess(new G4UserSpecialCuts(), particle);
+      //pmanager->AddDiscreteProcess(new G4UserSpecialCuts());
     }
     // Positron
     else if (particleName == "e+" ) {
@@ -160,6 +179,8 @@ void PhysicsList::ConstructEM()
       ph->RegisterProcess(new G4eBremsstrahlung,     particle);
       ph->RegisterProcess(new G4eplusAnnihilation,   particle);
       particle->SetApplyCutsFlag(true);
+      //ph->RegisterProcess(new G4UserSpecialCuts(), particle);
+      //pmanager->AddDiscreteProcess(new G4UserSpecialCuts());
     } 
     // Muons
     else if( particleName == "mu+" || 
@@ -214,12 +235,14 @@ void PhysicsList::SetCuts()
 
   SetCutsWithDefault();
 
-  //G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(0.611*MeV, 1*TeV);
+  G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(0.611*MeV, 1*TeV);
   //G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(5*MeV, 10*TeV);
+  //G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(100*MeV, 10*TeV);
   
-  //SetCutValue(0.1*mm, "gamma");
-  //SetCutValue(0.1*mm, "e+");
-  //SetCutValue(0.1*mm, "e-");
+  G4double cutval = 0.1*mm;
+  SetCutValue(cutval, "gamma");
+  SetCutValue(cutval, "e-");
+  SetCutValue(cutval, "e+");
 
   DumpCutValuesTable();
 

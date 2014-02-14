@@ -12,6 +12,10 @@
 #include "globals.hh"
 #include "G4NistManager.hh"
 
+#include "G4SystemOfUnits.hh"
+
+#include "G4UserLimits.hh"
+
 enum Material
 {
   Mat_ICE = 0,
