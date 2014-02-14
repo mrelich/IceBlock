@@ -1,6 +1,14 @@
+2014-02-14 Matt:
+	* Committing revisions and current stable working version.
+	* After trying many things to debug, I am pausing and going to tag this version
+	* Readme updated with some info incase Geant4 peeps want to take a look
+
+2014-02-12 Matt:
+	* Committing some revisions and additions.
+
 2014-02-05 Matt:
 	* Adding output directory for output files
-	
+
 2014-02-04 Matt:
 	* Creating repository for simple study of shower properties in various mediums
 	* Adding basic detector construction
