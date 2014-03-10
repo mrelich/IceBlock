@@ -33,6 +33,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   ~DetectorConstruction();
 
   G4VPhysicalVolume* Construct();
+
+  G4Material* GetMaterial(){ return m_material; };
   
  private:
   
@@ -46,6 +48,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
   // The detector material
   G4int m_detMaterial;
+  G4Material* m_material;
   
 };
 

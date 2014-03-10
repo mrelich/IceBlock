@@ -1,3 +1,7 @@
+2014-03-10 Matt:
+	* After many changes, finally figured out my issue with particle counting. Commit changes before next update.
+	* Next Update will be to create a TTree to be output of Geant information.
+
 2014-02-14 Matt:
 	* Committing revisions and current stable working version.
 	* After trying many things to debug, I am pausing and going to tag this version

@@ -4,9 +4,10 @@
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
-EventAction::EventAction()
+EventAction::EventAction(std::ofstream* file)
 {
   // dummy
+  m_outfile = file;
 }
 
 //-----------------------------------------------------------------//
@@ -20,9 +21,11 @@ EventAction::~EventAction()
 //-----------------------------------------------------------------//
 // Begin Event
 //-----------------------------------------------------------------//
-void EventAction::BeginOfEventAction(const G4Event*)
+void EventAction::BeginOfEventAction(const G4Event* evt)
 {
   // dummy
+  (*m_outfile) << "Event: " << evt->GetEventID() << G4endl;
+
 }
 
 //-----------------------------------------------------------------//
@@ -43,4 +46,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     G4cout << "    " << n_trajectories 
            << " trajectories stored in this event." << G4endl;
   }
+
+  (*m_outfile) << "End: " << evt->GetEventID() << G4endl;
+
 }

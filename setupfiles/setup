@@ -1,19 +1,30 @@
 # .bashrc
 
 # This should be the path to your geant4 build directory
-source /disk12/mrelich/geant4.9.5.p02-build/geant4make.sh
+#source /disk12/mrelich/geant4.9.5.p02-build/geant4make.sh
+source /home/mrelich/workarea/geant/geant4.10.00-build/geant4make.sh
 
 # These will most likely need to be downloaded separately 
 # if you are using less than geant 4.10.  Otherwise you can
 # specify geant4.10.00 to download these files when running
 # cmake.  See installation manual
 #------ geant4.9.5.p01 -----------------------------------------
+#export G4ABLADATA=${G4INSTALL}/data/G4ABLA3.0
+#export G4LEDATA=${G4INSTALL}/data/G4EMLOW6.23    
+#export G4NEUTRONHPDATA=${G4INSTALL}/data/G4NDL4.0
+#export G4RADIOACTIVEDATA=${G4INSTALL}/data/RadioactiveDecay3.4
+#export G4LEVELGAMMADATA=${G4INSTALL}/data/PhotonEvaporation2.2
+#export G4PIDATA=${G4INSTALL}/data/G4PII1.3
+#export G4REALSURFACEDATA=${G4INSTALL}/data/RealSurface1.0
+#export G4NEUTRONXSDATA=${G4INSTALL}/data/G4NEUTRONXS1.1       
+
+#------ geant4.10.00 -----------------------------------------
 export G4ABLADATA=${G4INSTALL}/data/G4ABLA3.0
-export G4LEDATA=${G4INSTALL}/data/G4EMLOW6.23    
-export G4NEUTRONHPDATA=${G4INSTALL}/data/G4NDL4.0
-export G4RADIOACTIVEDATA=${G4INSTALL}/data/RadioactiveDecay3.4
-export G4LEVELGAMMADATA=${G4INSTALL}/data/PhotonEvaporation2.2
+export G4LEDATA=${G4INSTALL}/data/G4EMLOW6.35    
+export G4NEUTRONHPDATA=${G4INSTALL}/data/G4NDL4.4
+export G4RADIOACTIVEDATA=${G4INSTALL}/data/RadioactiveDecay4.0
+export G4LEVELGAMMADATA=${G4INSTALL}/data/PhotonEvaporation3.0
 export G4PIDATA=${G4INSTALL}/data/G4PII1.3
 export G4REALSURFACEDATA=${G4INSTALL}/data/RealSurface1.0
-export G4NEUTRONXSDATA=${G4INSTALL}/data/G4NEUTRONXS1.1       
+export G4NEUTRONXSDATA=${G4INSTALL}/data/G4NEUTRONXS1.4
 

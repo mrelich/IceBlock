@@ -21,6 +21,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   void GeneratePrimaries(G4Event*);
 
+  G4ParticleGun* GetParticleGun(){ return particleGun; };
+
  private:
   G4ParticleGun* particleGun;
   DetectorConstruction* myDetector;

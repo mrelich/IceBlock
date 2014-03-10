@@ -1,5 +1,7 @@
 
+
 #include "DetectorConstruction.hh"
+#include "G4MaterialPropertiesTable.hh"
 
 //-----------------------------------------------------------------//
 // Constructor
@@ -9,7 +11,8 @@ DetectorConstruction::DetectorConstruction(G4int detMat) :
   m_iceblock_log(NULL),
   m_world_phys(NULL),
   m_iceblock_phys(NULL),
-  m_detMaterial(0)
+  m_detMaterial(0),
+  m_material(NULL)
 {
 
   // Set detector material
@@ -47,32 +50,32 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Add some elements
   G4Element* H   = new G4Element("Hydrogen", "H" , z=1. , a=1.00794*g/mole );
   G4Element* O   = new G4Element("Oxygen"  , "O" , z=8. , a= 16.00*g/mole  );
-  G4Element* Pb  = new G4Element("Lead"    , "Pb", z=82., a= 207.19*g/mole    );
-  G4Element* Fe  = new G4Element("Iron"    , "Fe", z=26., a= 55.845*g/mole    );
-  
+  //G4Element* Pb  = new G4Element("Lead"    , "Pb", z=82., a= 207.19*g/mole    );
+  //G4Element* Fe  = new G4Element("Iron"    , "Fe", z=26., a= 55.845*g/mole    );
+
   //
   // Create Material for the detector.
   //
+  
+  //G4Material* det;
 
-  G4Material* det;
   if( m_detMaterial == Mat_LEAD ){
-    det =  new G4Material("LEAD", density=11.3*g/cm3, nel=1,
-			  kStateSolid, 290.*kelvin); 
-    det->AddElement(Pb, 1 );
-    
+    //det =  new G4Material("LEAD", density=11.3*g/cm3, nel=1,
+    //kStateSolid, 290.*kelvin); 
+    //det->AddElement(Pb, 1 );
+    m_material = nist->FindOrBuildMaterial("G4_Pb");
   }
   else if( m_detMaterial == Mat_IRON ){
-    det =  new G4Material("IRON", density=7.874*g/cm3, nel=1,
-			  kStateSolid, 290.*kelvin); 
-    det->AddElement(Fe, 1 );
-    
+    //det =  new G4Material("IRON", density=7.874*g/cm3, nel=1,
+    //kStateSolid, 290.*kelvin); 
+    //det->AddElement(Fe, 1 );
+    m_material = nist->FindOrBuildMaterial("G4_Fe");    
   }
   else{ // default is ice
-    det =  new G4Material("ICE", density=0.920*g/cm3, nel=2,
-			  kStateSolid, 216.15*kelvin); 
-    det->AddElement(H, 2 );
-    det->AddElement(O, 1 );
-
+    m_material =  new G4Material("ICE", density=0.924*g/cm3, nel=2);
+    m_material->AddElement(H, 2 );
+    m_material->AddElement(O, 1 );
+    m_material->GetIonisation()->SetMeanExcitationEnergy(78*eV);
   }
 
   //
@@ -118,17 +121,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   // Logical volume
   m_iceblock_log = new G4LogicalVolume(iceblock_box,
-				      det,
+				      m_material,
 				      "iceblock_log");
 
-  // Try adding User limits.
-  // UPDATE: Doesn't seem to impact results at all...
-  //m_iceblock_log->SetUserLimits(new G4UserLimits(DBL_MAX,   // stepMax
-  //DBL_MAX,   // trackMax
-  //DBL_MAX,   // timeMax
-  //0.611*MeV, // kinMin
-  ////100.0*MeV, // kinMin
-  //0)         // rangeMin
+  // ADDING: Set the minimum cuts here
+  //m_iceblock_log->SetUserLimits( new G4UserLimits(1*mm,    // Step length Max
+  //DBL_MAX, // Track length Max
+  //DBL_MAX, // Time Max for track
+  //0,       // Minimum Kinetic energy
+  //0.)      // Range Min for track
   //);
 
   // Physical volume

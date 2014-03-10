@@ -11,7 +11,8 @@ SteppingVerbose::SteppingVerbose(string outputName) :
   
   string dir = string( getenv("PWD") );
   //outputFile.open((dir+"/output/"+outputName+".dat").c_str(),ofstream::out);
-  outputFile.open((dir+"/tmp/"+outputName+".dat").c_str(),ofstream::out);
+  //outputFile.open((dir+"/tmp/"+outputName+".dat").c_str(),ofstream::out);
+  outputFile.open((dir+"/output/"+outputName+".dat").c_str(),ofstream::out);
 
 }
 
@@ -33,6 +34,8 @@ void SteppingVerbose::StepInfo()
 
   // Necessary
   CopyState();
+
+  if( fTrack->GetParticleDefinition()->GetPDGEncoding() == 0 ) return;
 
   //
   // Dump some basic info
@@ -57,8 +60,9 @@ void SteppingVerbose::StepInfo()
            == "conv" ) ProcessID=6;
   else if(fStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()
 	  == "muIoni" ) ProcessID = 1;
-  else return; // ProcessID=-100;
-  
+  //else return; //  ProcessID=-100;
+  else ProcessID=-100;
+
   outputFile <<
     //fStep->GetPostStepPoint()->GetPosition().x()/cm <<" "<<
     //fStep->GetPostStepPoint()->GetPosition().y()/cm <<" "<<
@@ -87,6 +91,8 @@ void SteppingVerbose::TrackingStarted()
 
   // Necessary
   CopyState();
+
+  if( fTrack->GetParticleDefinition()->GetPDGEncoding() == 0 ) return;
 
   // The Created Process will crash for the intial particle.
   // So make sure we are grabbing something that exists
