@@ -43,11 +43,12 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 //TrackingAction::TrackingAction(DetectorConstruction* DET, EventAction* EA)
-TrackingAction::TrackingAction(std::ofstream* file)
+TrackingAction::TrackingAction(std::ofstream* file) 
   : G4UserTrackingAction(), m_output(file)
+  //m_treeWriter(treeWriter)
   //fDetector(DET), fEventAction(EA)
 { }
- 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void TrackingAction::PreUserTrackingAction(const G4Track* aTrack )
@@ -74,6 +75,22 @@ void TrackingAction::PreUserTrackingAction(const G4Track* aTrack )
     position.z()/cm << " " <<
     energy/MeV      << " " <<
     total_e/MeV      << " ";
+  
+  // Get the event
+  //Event* event  = m_treeWriter->GetEvt();
+
+  // Create Particle
+  //event->addParticle( Particle() );
+  //Particle* part = event->getLastPart();
+  //part->setPDG( aTrack->GetParticleDefinition()->GetPDGEncoding() );
+
+  // Create Track object
+  //part->setTrack( Track() );
+  //Track* trk = part->track();
+  //trk->setInitialPosition( position.x()/cm, position.y()/cm, position.z()/cm );
+  //trk->setTrackID(aTrack->GetTrackID());
+  //trk->setParentID(aTrack->GetParentID());
+  //trk->setInitialE(aTrack->GetKineticEnergy()/MeV);
 
 }
 
@@ -95,7 +112,11 @@ void TrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     parent_id << " " <<
     pdg_id << " " <<
     G4endl;
-  
+
+  // Save tracks final position
+  //Track* trk = m_treeWriter->GetEvt()->getLastPart()->track();
+  //trk->setFinalPosition(position.x()/cm, position.y()/cm, position.z()/cm);
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -16,6 +16,7 @@
 #include "SteppingAction.hh"
 #include "SteppingVerbose.hh"
 #include "TrackingAction.hh"
+//#include "MyTreeWriter.hh"
 
 #include <sstream>
 #include <fstream>
@@ -67,7 +68,7 @@ int main(int argc, char** argv)
   G4int nParticles  = 1;     // number of particles
   G4int beamEnergy  = 1000.; // MeV
   G4int detMaterial = 0;     // detector material
-  string partType   = "e-";   
+  std::string partType   = "e-";   
 
   // Options
   for(int i=1; i<argc; ++i){
@@ -79,8 +80,8 @@ int main(int argc, char** argv)
       beamEnergy = atoi( argv[++i] );
     else if( strcmp(argv[i], "-t") == 0 )
       detMaterial = atoi( argv[++i] );
-    else if( strcmp(argv[i], "-p") )
-      partType = argv[++i];
+    else if( strcmp(argv[i], "-p") == 0 )
+      partType = string(argv[++i]);
     else{
       help();
       return 0;
@@ -124,16 +125,21 @@ int main(int argc, char** argv)
   runManager->SetUserInitialization(physics);
   
   // Open up a file for output
-  std::ofstream output("testOut.dat", std::ofstream::out);
+  std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
+  std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
+
+  // My output tree
+  // This seems to take too long!!
+  //MyTreeWriter* treeWriter = new MyTreeWriter("trees/test.root");
+  //MyTreeWriter* treeWriter = new MyTreeWriter(("trees/"+TString(ss.str().c_str())+".root"));
   
   // Set Primary action to be carried out
-  //G4VUserPrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(detector,beamEnergy,partType);
   PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(detector,beamEnergy,partType);  
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
-  runManager->SetUserAction(new EventAction(&output));
-  runManager->SetUserAction(new SteppingAction);
-  runManager->SetUserAction(new TrackingAction(&output));
+  runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput));
+  runManager->SetUserAction(new SteppingAction(&stepOutput));
+  runManager->SetUserAction(new TrackingAction(&trackOutput));
 
   // Initialize G4 Kernel
   runManager->Initialize();
@@ -146,6 +152,13 @@ int main(int argc, char** argv)
 
   // Start the run
   runManager->BeamOn(nEvents);
+
+  // Write tree and end
+  //treeWriter->Finalize();
+  //delete treeWriter;
+
+  trackOutput.close();
+  stepOutput.close();
 
   delete runManager;
 

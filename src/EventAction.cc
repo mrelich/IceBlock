@@ -4,10 +4,15 @@
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
-EventAction::EventAction(std::ofstream* file)
+EventAction::EventAction(std::ofstream* trkFile, 
+			 std::ofstream* stepFile) :			 
+  m_trkOutput(NULL),
+  m_stepOutput(NULL)
+  //m_treeWriter(NULL)
 {
-  // dummy
-  m_outfile = file;
+  m_trkOutput = trkFile;
+  m_stepOutput = stepFile;
+  //m_treeWriter = treeWriter;
 }
 
 //-----------------------------------------------------------------//
@@ -16,6 +21,9 @@ EventAction::EventAction(std::ofstream* file)
 EventAction::~EventAction()
 {
   // dummy
+  m_trkOutput = NULL;
+  m_stepOutput = NULL;
+  //m_treeWriter = NULL;
 }
 
 //-----------------------------------------------------------------//
@@ -24,8 +32,9 @@ EventAction::~EventAction()
 void EventAction::BeginOfEventAction(const G4Event* evt)
 {
   // dummy
-  (*m_outfile) << "Event: " << evt->GetEventID() << G4endl;
-
+  (*m_trkOutput) << "Event: " << evt->GetEventID() << G4endl;
+  (*m_stepOutput) << "Event: " << evt->GetEventID() << G4endl;
+  //m_treeWriter->CreateEvent( evt->GetEventID() );
 }
 
 //-----------------------------------------------------------------//
@@ -41,12 +50,17 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
   
   // periodic printing
-  if (event_id < 100 || event_id%100 == 0) {
+  //if (event_id < 100 || event_id%100 == 0) {
+  if (event_id%10 == 0) {
     G4cout << ">>> Event " << evt->GetEventID() << G4endl;
     G4cout << "    " << n_trajectories 
            << " trajectories stored in this event." << G4endl;
   }
 
-  (*m_outfile) << "End: " << evt->GetEventID() << G4endl;
+  (*m_trkOutput) << "End: " << evt->GetEventID() << G4endl;
+  (*m_stepOutput) << "End: " << evt->GetEventID() << G4endl;
+
+  //G4cout<<"Writing event: "<<evt->GetEventID()<<G4endl;
+  //m_treeWriter->WriteEvent();
 
 }

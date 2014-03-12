@@ -38,6 +38,7 @@
 #include "globals.hh"
 
 #include <fstream>
+//#include "MyTreeWriter.hh"
 
 class DetectorConstruction;
 class EventAction;
@@ -48,8 +49,8 @@ class TrackingAction : public G4UserTrackingAction {
 
   public:  
   //TrackingAction(DetectorConstruction*,EventAction*);
-  TrackingAction(std::ofstream* file);
-   ~TrackingAction() {};
+  TrackingAction(std::ofstream* file); //, MyTreeWriter* treeWriter);
+  ~TrackingAction() { m_output = NULL; };
    
     virtual void  PreUserTrackingAction(const G4Track*);   
     virtual void PostUserTrackingAction(const G4Track*);
@@ -62,6 +63,7 @@ class TrackingAction : public G4UserTrackingAction {
   //G4double fPrimaryCharge;
 
   std::ofstream* m_output;
+  //MyTreeWriter*  m_treeWriter;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
