@@ -1,3 +1,12 @@
+2014-03-13 Matt:
+	* Adding python scripts used to make all the plots
+	* Adding C scripts for formatting plot output
+	* Adding submission scripts to give idea of how to run
+
+2014-03-12 Matt:
+	* TTree takes too long! Going back to text files.
+	* Added modularity to save both track and step output in separate files.
+
 2014-03-10 Matt:
 	* After many changes, finally figured out my issue with particle counting. Commit changes before next update.
 	* Next Update will be to create a TTree to be output of Geant information.

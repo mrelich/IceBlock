@@ -125,13 +125,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 				      "iceblock_log");
 
   // ADDING: Set the minimum cuts here
-  //m_iceblock_log->SetUserLimits( new G4UserLimits(1*mm,    // Step length Max
+  //m_iceblock_log->SetUserLimits( new G4UserLimits(DBL_MAX,    // Step length Max
   //DBL_MAX, // Track length Max
   //DBL_MAX, // Time Max for track
-  //0,       // Minimum Kinetic energy
+  //100 * MeV,       // Minimum Kinetic energy
   //0.)      // Range Min for track
   //);
-
+  
   // Physical volume
   m_iceblock_phys = new G4PVPlacement(0,                             // no rotation
 				      G4ThreeVector(),

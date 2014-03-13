@@ -50,6 +50,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
            == "conv" ) ProcessID=6;
   else if(aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()
           == "muIoni" ) ProcessID = 1;
+  else if(aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()
+	  == "UserSpecialCut" ) return;
   else ProcessID=-100;
 
   
