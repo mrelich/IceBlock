@@ -37,7 +37,8 @@ f_mat    = fname.split("_")[3]
 f_part   = (fname.split("_")[4]).split(".")[0]
 
 infile = open(fname,"r")
-output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_5MeV.root","recreate")
+#output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_5MeV.root","recreate")
+output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+".root","recreate")
 
 #
 ## Constants
@@ -48,8 +49,7 @@ threshold = 0
 
 if "ice" == f_mat:
     radLength = 39.0522 # cm
-    #threshold = 0.611   # MeV
-    threshold = 5   # MeV
+    threshold = 0.611   # MeV
 elif "iron" == f_mat:
     radLength = 1.75749 # cm
     threshold = 100     # MeV
@@ -59,7 +59,6 @@ elif "lead" == f_mat:
 else:
     print "Material not recognized"
     sys.exit()
-    
 
 #
 ## Plots and constants

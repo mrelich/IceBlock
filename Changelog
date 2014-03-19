@@ -1,3 +1,6 @@
+2014-03-18 Matt:
+	* Added option to set tracking threshold
+
 2014-03-13 Matt:
 	* Adding python scripts used to make all the plots
 	* Adding C scripts for formatting plot output

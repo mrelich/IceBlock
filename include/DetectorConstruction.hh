@@ -29,7 +29,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
  public:
   
-  DetectorConstruction(G4int detMaterial);
+  DetectorConstruction(G4int detMaterial, G4double EThresh, bool useThresh);
   ~DetectorConstruction();
 
   G4VPhysicalVolume* Construct();
@@ -49,6 +49,10 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   // The detector material
   G4int m_detMaterial;
   G4Material* m_material;
+  
+  // Energy threshold can be imposed
+  G4double m_threshold;
+  bool m_useThreshold;
   
 };
 

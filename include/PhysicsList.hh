@@ -55,7 +55,7 @@ class PhysicsList : public G4VUserPhysicsList
 
  public:
   
-  PhysicsList();
+  PhysicsList(bool useThresh);
   ~PhysicsList();
 
  protected:
@@ -83,6 +83,7 @@ class PhysicsList : public G4VUserPhysicsList
   G4OpRayleigh*        theRayleighScatteringProcess;
   G4OpMieHG*           theMieHGScatteringProcess;
   G4OpBoundaryProcess* theBoundaryProcess;
+  bool m_useThreshold;
   
 };
 

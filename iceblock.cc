@@ -52,6 +52,9 @@ void help()
   cout << "\t\t e+ -- Positron" << endl;
   cout << "\t\t mu- -- Muon" << endl;
   cout << "\t\t gamma -- Photon" << endl;
+  cout << "-c <float>" << endl;
+  cout << "\t Specify the energy threshold to use in MeV" << endl;
+  cout << "\t Default is 0" << endl;
   cout << "-------------------------------------------" << endl;
   cout << endl;
   cout << endl;
@@ -64,11 +67,13 @@ void help()
 int main(int argc, char** argv)
 {
 
-  G4int nEvents     = 1;     // number of events
-  G4int nParticles  = 1;     // number of particles
-  G4int beamEnergy  = 1000.; // MeV
-  G4int detMaterial = 0;     // detector material
+  G4int nEvents          = 1;     // number of events
+  G4int nParticles       = 1;     // number of particles
+  G4int beamEnergy       = 1000; // MeV
+  G4int detMaterial      = 0;     // detector material
   std::string partType   = "e-";   
+  G4double threshold     = 0;
+  bool useThreshold      = false;
 
   // Options
   for(int i=1; i<argc; ++i){
@@ -82,6 +87,10 @@ int main(int argc, char** argv)
       detMaterial = atoi( argv[++i] );
     else if( strcmp(argv[i], "-p") == 0 )
       partType = string(argv[++i]);
+    else if( strcmp(argv[i], "-c") == 0 ){
+      threshold = atof( argv[++i] );
+      useThreshold = true;
+    }
     else{
       help();
       return 0;
@@ -109,6 +118,9 @@ int main(int argc, char** argv)
   else if(partType == "gamma") ss << "_gBeam";
   else                         ss << "_unkBeam";
   
+  // If threshold is set, append to file
+  if(useThreshold) ss << "_thresh" << threshold << "MeV";
+
   // My own stepping
   //G4VSteppingVerbose* verboseStep = new SteppingVerbose(ss.str());
   //G4VSteppingVerbose::SetInstance(verboseStep);
@@ -117,11 +129,13 @@ int main(int argc, char** argv)
   G4RunManager* runManager = new G4RunManager;
 
   // Construct detector
-  DetectorConstruction* detector = new DetectorConstruction(detMaterial);
+  DetectorConstruction* detector = new DetectorConstruction(detMaterial,
+							    threshold,
+							    useThreshold);
   runManager->SetUserInitialization(detector);
 
   // Set Physics list
-  G4VUserPhysicsList* physics = new PhysicsList();
+  G4VUserPhysicsList* physics = new PhysicsList(useThreshold);
   runManager->SetUserInitialization(physics);
   
   // Open up a file for output
@@ -138,7 +152,7 @@ int main(int argc, char** argv)
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
   runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput));
-  runManager->SetUserAction(new SteppingAction(&stepOutput));
+  //runManager->SetUserAction(new SteppingAction(&stepOutput));
   runManager->SetUserAction(new TrackingAction(&trackOutput));
 
   // Initialize G4 Kernel

@@ -6,18 +6,24 @@
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
-DetectorConstruction::DetectorConstruction(G4int detMat) :
+DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh, bool useThresh) :
   m_world_log(NULL),
   m_iceblock_log(NULL),
   m_world_phys(NULL),
   m_iceblock_phys(NULL),
   m_detMaterial(0),
-  m_material(NULL)
+  m_material(NULL),
+  m_threshold(0),
+  m_useThreshold(false)
 {
 
   // Set detector material
   m_detMaterial = detMat;
 
+  // Set threshold
+  m_threshold    = EThresh;
+  m_useThreshold = useThresh;
+ 
 }
 
 //-----------------------------------------------------------------//
@@ -125,12 +131,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 				      "iceblock_log");
 
   // ADDING: Set the minimum cuts here
-  //m_iceblock_log->SetUserLimits( new G4UserLimits(DBL_MAX,    // Step length Max
-  //DBL_MAX, // Track length Max
-  //DBL_MAX, // Time Max for track
-  //100 * MeV,       // Minimum Kinetic energy
-  //0.)      // Range Min for track
-  //);
+  if( m_useThreshold){
+    m_iceblock_log->SetUserLimits( new G4UserLimits(DBL_MAX,           // Step length Max
+						    DBL_MAX,           // Track length Max
+						    DBL_MAX,           // Time Max for track
+						    m_threshold * MeV, // Minimum Kinetic energy
+						    0.)                // Range Min for track
+				   );
+  }
   
   // Physical volume
   m_iceblock_phys = new G4PVPlacement(0,                             // no rotation

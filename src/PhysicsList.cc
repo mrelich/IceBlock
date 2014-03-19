@@ -8,17 +8,18 @@
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
-PhysicsList::PhysicsList() :
+PhysicsList::PhysicsList(bool useThresh) :
   theCerenkovProcess(NULL),
   theScintillationProcess(NULL),
   theAbsorptionProcess(NULL),
   theRayleighScatteringProcess(NULL),
   theMieHGScatteringProcess(NULL),
-  theBoundaryProcess(NULL)
+  theBoundaryProcess(NULL),
+  m_useThreshold(false)
 {
 
   emStandard = new G4EmStandardPhysics();
-
+  m_useThreshold = useThresh;
 }
 
 //-----------------------------------------------------------------//
@@ -207,10 +208,11 @@ void PhysicsList::ConstructEM()
   // Copying from Example02 in novice geant4 examples
   G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
   
-  //ph->RegisterProcess(new G4UserSpecialCuts(), G4Gamma::GammaDefinition());
-  //ph->RegisterProcess(new G4UserSpecialCuts(), G4Electron::ElectronDefinition());
-  //ph->RegisterProcess(new G4UserSpecialCuts(), G4Positron::PositronDefinition());
-  
+  if( m_useThreshold ){
+    ph->RegisterProcess(new G4UserSpecialCuts(), G4Gamma::GammaDefinition());
+    ph->RegisterProcess(new G4UserSpecialCuts(), G4Electron::ElectronDefinition());
+    ph->RegisterProcess(new G4UserSpecialCuts(), G4Positron::PositronDefinition());
+  }
 
   theParticleIterator->reset();
   while( (*theParticleIterator)() ){
