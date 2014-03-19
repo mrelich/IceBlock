@@ -14,6 +14,7 @@ sys.path.insert(0, pwd+'/python')
 from tools import *
 from parseTrackFile import *
 from ROOT import *
+import numpy as n
 
 #                                                                                                                               
 ## Specify input file                                                                                                           
@@ -59,47 +60,48 @@ else:
 ## Setup the tree
 #
 
-event = int(0)
-x     = float(0)
-y     = float(0)
-z     = float(0)
-xf    = float(0)
-yf    = float(0)
-zf    = float(0)
-E     = float(0)
+event = n.zeros(1,dtype=int)
+x     = n.zeros(1,dtype=float)
+y     = n.zeros(1,dtype=float)
+z     = n.zeros(1,dtype=float)
+xf    = n.zeros(1,dtype=float)
+yf    = n.zeros(1,dtype=float)
+zf    = n.zeros(1,dtype=float)
+E     = n.zeros(1,dtype=float)
 
 
 tree = TTree("ntuple","Simple Tree")
-tree.Branch('evtNum', event,'normal/I')
-tree.Branch('xi', hex(id(x)),'normal/F')
-tree.Branch('yi', hex(id(y)),'normal/F')
-tree.Branch('zi', hex(id(z)),'normal/F')
-tree.Branch('xf', hex(id(xf)),'normal/F')
-tree.Branch('yf', hex(id(yf)),'normal/F')
-tree.Branch('zf', hex(id(zf)),'normal/F')
-tree.Branch('E', hex(id(E)),'normal/F')
+tree.Branch('evtNum', event,'event/I')
+tree.Branch('xi', hex(id(x)),'normal/D')
+tree.Branch('yi', hex(id(y)),'normal/D')
+tree.Branch('zi', hex(id(z)),'normal/D')
+tree.Branch('xf', hex(id(xf)),'normal/D')
+tree.Branch('yf', hex(id(yf)),'normal/D')
+tree.Branch('zf', hex(id(zf)),'normal/D')
+tree.Branch('E', E,'energy/D')
 
 for line in infile:
 
     # Initialize stuff at beginning of evnet                                                                                    
     if "Event" in line:
-        if event % 50 ==0: print "Event: ", event
+        if event[0] % 50 ==0: 
+            print "*** Processing Event ", event[0]
         continue
 
     # End of event. Fill profiles for event                                                                                     
     if "End" in line:
-        event += 1
+        event[0] += 1
         continue
 
     # Set Variables
-    x  = getTrkX(line)
-    y  = getTrkY(line)
-    z  = getTrkZ(line)
-    xf = getTrkXFinal(line)
-    yf = getTrkYFinal(line)
-    zf = getTrkZFinal(line)
-    E  = getTrkE(line)
-    
+    x[0]  = getTrkX(line)
+    y[0]  = getTrkY(line)
+    z[0]  = getTrkZ(line)
+    xf[0] = getTrkXFinal(line)
+    yf[0] = getTrkYFinal(line)
+    zf[0] = getTrkZFinal(line)
+    E[0]  = getTrkE(line)
+
     tree.Fill()
 
 # Clean up
