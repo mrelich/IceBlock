@@ -1,5 +1,6 @@
-2014-03-18 Matt:
+2014-03-19 Matt:
 	* Added option to set tracking threshold
+	* Added script to make simple tree.  We will see if it is useful
 
 2014-03-13 Matt:
 	* Adding python scripts used to make all the plots

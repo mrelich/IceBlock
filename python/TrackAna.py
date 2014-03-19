@@ -16,11 +16,6 @@ from array import array
 pwd = os.environ['PWD']
 sys.path.insert(0, pwd+'/python')
 
-#---------------------------
-# TODO:
-#   * Add run options
-#---------------------------
-
 #
 ## Specify input file
 #
