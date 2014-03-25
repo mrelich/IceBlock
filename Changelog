@@ -1,3 +1,6 @@
+2014-03-25 Matt:
+	* Add option to specify the number of initial particles.
+
 2014-03-19 Matt:
 	* Added option to set tracking threshold
 	* Added script to make simple tree.  We will see if it is useful

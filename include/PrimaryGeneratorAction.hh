@@ -16,7 +16,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
  public:
 
   // Constructor / Destructor
-  PrimaryGeneratorAction(DetectorConstruction*, G4float, std::string);
+  PrimaryGeneratorAction(DetectorConstruction*, G4float, std::string, G4int);
   ~PrimaryGeneratorAction();
 
   void GeneratePrimaries(G4Event*);

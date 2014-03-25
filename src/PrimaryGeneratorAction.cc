@@ -6,7 +6,8 @@
 //-----------------------------------------------------------------//
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC, 
 					       G4float partEnergy,
-					       std::string partType) :
+					       std::string partType,
+					       G4int n_particle) :
   myDetector(NULL)
 {
 
@@ -18,7 +19,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC,
   //
   // Specify the number of particles to be simulated
   //
-  G4int n_particle = 1;
+  //G4int n_particle = 1;
   particleGun = new G4ParticleGun(n_particle);
 
   //

@@ -118,6 +118,9 @@ int main(int argc, char** argv)
   else if(partType == "gamma") ss << "_gBeam";
   else                         ss << "_unkBeam";
   
+  // Add the number of particles
+  ss << "_np" << nParticles;
+
   // If threshold is set, append to file
   if(useThreshold) ss << "_thresh" << threshold << "MeV";
 
@@ -148,7 +151,10 @@ int main(int argc, char** argv)
   //MyTreeWriter* treeWriter = new MyTreeWriter(("trees/"+TString(ss.str().c_str())+".root"));
   
   // Set Primary action to be carried out
-  PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(detector,beamEnergy,partType);  
+  PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(detector,
+								 beamEnergy,
+								 partType,
+								 nParticles);  
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
   runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput));
