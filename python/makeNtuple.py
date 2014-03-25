@@ -61,24 +61,21 @@ else:
 #
 
 event = n.zeros(1,dtype=int)
-x     = n.zeros(1,dtype=float)
-y     = n.zeros(1,dtype=float)
+#x     = n.zeros(1,dtype=float)
+#y     = n.zeros(1,dtype=float)
 z     = n.zeros(1,dtype=float)
-xf    = n.zeros(1,dtype=float)
-yf    = n.zeros(1,dtype=float)
+#xf    = n.zeros(1,dtype=float)
+#yf    = n.zeros(1,dtype=float)
 zf    = n.zeros(1,dtype=float)
 E     = n.zeros(1,dtype=float)
-
+pdg   = n.zeros(1,dtype=int)
 
 tree = TTree("ntuple","Simple Tree")
 tree.Branch('evtNum', event,'event/I')
-tree.Branch('xi', hex(id(x)),'normal/D')
-tree.Branch('yi', hex(id(y)),'normal/D')
-tree.Branch('zi', hex(id(z)),'normal/D')
-tree.Branch('xf', hex(id(xf)),'normal/D')
-tree.Branch('yf', hex(id(yf)),'normal/D')
-tree.Branch('zf', hex(id(zf)),'normal/D')
+tree.Branch('zi', z,'normal/D')
+tree.Branch('zf', zf,'normal/D')
 tree.Branch('E', E,'energy/D')
+tree.Branch('pdg', pdg, 'pdg/I')
 
 for line in infile:
 
@@ -94,19 +91,21 @@ for line in infile:
         continue
 
     # Set Variables
-    x[0]  = getTrkX(line)
-    y[0]  = getTrkY(line)
+    #x[0]  = getTrkX(line)
+    #y[0]  = getTrkY(line)
     z[0]  = getTrkZ(line)
-    xf[0] = getTrkXFinal(line)
-    yf[0] = getTrkYFinal(line)
+    #xf[0] = getTrkXFinal(line)
+    #yf[0] = getTrkYFinal(line)
     zf[0] = getTrkZFinal(line)
     E[0]  = getTrkE(line)
+    pdg[0] = getTrkPDG(line)
 
     tree.Fill()
 
+
 # Clean up
 infile.close()
-output.Write()
+output.Write("",TObject.kOverwrite)
 output.Close()
 
 

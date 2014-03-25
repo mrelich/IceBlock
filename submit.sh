@@ -37,10 +37,13 @@ iron=2
 ## Want to count particles for higher energies
 #
 
-nohup iceblock -ne 100 -e 100000 -t $ice > logs/ice_100GeV.out &
-nohup iceblock -ne 50  -e 500000 -t $ice > logs/ice_500GeV.out &
-nohup iceblock -ne 20  -e 1000000 -t $ice > logs/ice_1000GeV.out &
+#nohup iceblock -ne 100 -e 100000 -t $ice > logs/ice_100GeV.out &
+#nohup iceblock -ne 50  -e 500000 -t $ice > logs/ice_500GeV.out &
+#nohup iceblock -ne 20  -e 1000000 -t $ice > logs/ice_1000GeV.out &
 
-nohup iceblock -ne 100 -e 100000 -t $ice -p gamma > logs/ice_100GeV_gam.out &
-nohup iceblock -ne 50  -e 500000 -t $ice -p gamma > logs/ice_500GeV_gam.out &
-nohup iceblock -ne 20  -e 1000000 -t $ice -p gamma > logs/ice_1000GeV_gam.out &
+#nohup iceblock -ne 100 -e 100000 -t $ice -p gamma > logs/ice_100GeV_gam.out &
+#nohup iceblock -ne 50  -e 500000 -t $ice -p gamma > logs/ice_500GeV_gam.out &
+#nohup iceblock -ne 20  -e 1000000 -t $ice -p gamma > logs/ice_1000GeV_gam.out &
+
+nohup iceblock -ne 20 -e 10000000 -t $ice -c 1 > logs/ice_10000GeV.out &
+
