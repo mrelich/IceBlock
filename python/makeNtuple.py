@@ -16,41 +16,39 @@ from parseTrackFile import *
 from ROOT import *
 import numpy as n
 
-#                                                                                                                               
-## Specify input file                                                                                                           
-#                                                                                                                               
-
+#
+## Specify input file
+#
 if len(sys.argv) < 2:
     print "Must specify input file name"
     sys.exit()
 
-# Parse input file                                                                                                             \
-                                                                                                                                
+# Parse input file 
 fname = sys.argv[1]
 f_energy = fname.split("_")[2]
 f_nEvent = fname.split("_")[1]
 f_mat    = fname.split("_")[3]
-f_part   = (fname.split("_")[4]).split(".")[0]
+f_part   = fname.split("_")[4]
+f_npart  = (fname.split("_")[5]).split(".")[0]
 
 infile = open(fname,"r")
-output = TFile("rootfiles/TrkTree_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+".root","recreate")
+output = TFile("rootfiles/TrkTree_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_"+f_npart+".root","recreate")
 
-#                                                                                                                               
-## Constants                                                                                                                    
-#                                                                                                                               
-
+#
+## Constants
+#
 radLength = 0
 threshold = 0
 
 if "ice" == f_mat:
-    radLength = 39.0522 # cm                                                                                                    
-    threshold = 0.611   # MeV                                                                                                   
+    radLength = 39.0522 # cm
+    threshold = 0.611   # MeV
 elif "iron" == f_mat:
-    radLength = 1.75749 # cm                                                                                                    
-    threshold = 100     # MeV                                                                                                   
+    radLength = 1.75749 # cm
+    threshold = 100     # MeV
 elif "lead" == f_mat:
-    radLength = 5.61253 # cm                                                                                                    
-    threshold = 100     # MeV                                                                                                   
+    radLength = 5.61253 # cm 
+    threshold = 100     # MeV
 else:
     print "Material not recognized"
     sys.exit()
@@ -79,13 +77,13 @@ tree.Branch('pdg', pdg, 'pdg/I')
 
 for line in infile:
 
-    # Initialize stuff at beginning of evnet                                                                                    
+    # Initialize stuff at beginning of event
     if "Event" in line:
         if event[0] % 50 ==0: 
             print "*** Processing Event ", event[0]
         continue
 
-    # End of event. Fill profiles for event                                                                                     
+    # End of event. Fill profiles for event
     if "End" in line:
         event[0] += 1
         continue

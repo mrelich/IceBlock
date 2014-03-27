@@ -1,3 +1,7 @@
+2014-03-27 Matt:
+	* Add plotting macro for shower comparisons
+	* Update TrkAna
+
 2014-03-25 Matt:
 	* Add option to specify the number of initial particles.
 
