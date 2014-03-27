@@ -29,10 +29,11 @@ fname = sys.argv[1]
 f_energy = fname.split("_")[2]
 f_nEvent = fname.split("_")[1]
 f_mat    = fname.split("_")[3]
-f_part   = (fname.split("_")[4]).split(".")[0]
+f_part   = fname.split("_")[4]
+f_npart  = (fname.split("_")[5]).split(".")[0]
 
 infile = open(fname,"r")
-output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_1MeV.root","recreate")
+output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_"+f_npart+"_1MeV.root","recreate")
 #output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+".root","recreate")
 
 #
