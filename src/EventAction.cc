@@ -45,7 +45,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   G4int event_id = evt->GetEventID();
   
   // periodic printing
-  if (event_id%10 == 0) {
+  //if (event_id%10 == 0) {
+  if (event_id%100000 == 0) {
     G4cout << "Events processed " << evt->GetEventID() << G4endl;
   }
   

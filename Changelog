@@ -1,6 +1,10 @@
+2014-05-29 Matt:
+	* Updating some minor changes during running.
+	* Going to build realistic setup for ELS site.
+
 2014-03-27 Matt:
 	* Add plotting macro for shower comparisons
-	* Update TrkAna
+	* Update ntuple maker to account for nParticles
 
 2014-03-25 Matt:
 	* Add option to specify the number of initial particles.

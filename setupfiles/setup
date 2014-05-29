@@ -2,7 +2,8 @@
 
 # This should be the path to your geant4 build directory
 #source /disk12/mrelich/geant4.9.5.p02-build/geant4make.sh
-source /home/mrelich/workarea/geant/geant4.10.00-build/geant4make.sh
+#source /home/mrelich/workarea/geant/geant4.10.00-build/geant4make.sh
+source /home/mrelich/geant/geant4.10.00.p01-build/geant4make.sh
 
 # These will most likely need to be downloaded separately 
 # if you are using less than geant 4.10.  Otherwise you can

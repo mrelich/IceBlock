@@ -45,5 +45,11 @@ iron=2
 #nohup iceblock -ne 50  -e 500000 -t $ice -p gamma > logs/ice_500GeV_gam.out &
 #nohup iceblock -ne 20  -e 1000000 -t $ice -p gamma > logs/ice_1000GeV_gam.out &
 
-nohup iceblock -ne 20 -e 10000000 -t $ice -c 1 > logs/ice_10000GeV.out &
+#nohup iceblock -ne 100 -e 100000 -t $ice -c 1 > logs/ice_100GeV.out &
+#nohup iceblock -ne 50 -e 1000000 -t $ice -c 1 > logs/ice_1000GeV.out &
+#nohup iceblock -ne 20 -e 10000000 -t $ice -c 1 > logs/ice_10000GeV.out &
+
+#nohup iceblock -ne 100 -e 10000 -t $ice -np 10 > logs/ice_10GeV.out &
+nohup iceblock -ne 50 -e 100000 -t $ice -np 10 > logs/ice_100GeV_10p.out &
+nohup iceblock -ne 50 -e 10000 -t $ice -np 100 > logs/ice_10GeV_100p.out &
 

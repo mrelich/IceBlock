@@ -73,8 +73,10 @@ void TrackingAction::PreUserTrackingAction(const G4Track* aTrack )
     position.x()/cm << " " <<
     position.y()/cm << " " <<
     position.z()/cm << " " <<
+    aTrack->GetGlobalTime()/ns<<" "<<
     energy/MeV      << " " <<
     total_e/MeV      << " ";
+
   
   // Get the event
   //Event* event  = m_treeWriter->GetEvt();
@@ -108,6 +110,7 @@ void TrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     position.x()/cm << " " <<
     position.y()/cm << " " <<
     position.z()/cm << " " <<
+    aTrack->GetGlobalTime()/ns<<" "<<
     trk_id << " " <<
     parent_id << " " <<
     pdg_id << " " <<

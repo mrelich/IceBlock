@@ -60,6 +60,18 @@ TLatex* makeLatex()
 }
 
 //------------------------------------------------------------//
+// Get maximum of two histograms
+//------------------------------------------------------------//
+double getMax(TH1* h0, TH1* h1)
+{
+  
+  if(h0->GetMaximum() < h1->GetMaximum())
+    return h1->GetMaximum();
+  
+  return h0->GetMaximum();
+
+}
+//------------------------------------------------------------//
 // Plot to fine Moliere Radius
 //------------------------------------------------------------//
 void plotMoliereRadius()

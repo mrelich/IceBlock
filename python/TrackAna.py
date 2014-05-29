@@ -33,7 +33,9 @@ f_part   = fname.split("_")[4]
 f_npart  = (fname.split("_")[5]).split(".")[0]
 
 infile = open(fname,"r")
-output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_"+f_npart+"_1MeV.root","recreate")
+#output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_"+f_npart+"_1MeV.root","recreate")
+#output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_"+f_npart+"_1MeV_zbinning.root","recreate")
+output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+"_"+f_npart+"_1MeV_larger.root","recreate")
 #output = TFile("rootfiles/TrkAna_"+f_nEvent+"_"+f_energy+"_"+f_mat+"_"+f_part+".root","recreate")
 
 #
@@ -46,7 +48,7 @@ threshold = 0
 if "ice" == f_mat:
     radLength = 39.0522 # cm
     #threshold = 0.611   # MeV
-    threshold = 1   # MeV
+    threshold = 0.611   # MeV
 elif "iron" == f_mat:
     radLength = 1.75749 # cm
     threshold = 100     # MeV
@@ -62,9 +64,9 @@ else:
 #
 
 # Nparticles
-stepsize = 0.5 # Determines bin size for NPart plot
+stepsize = 1.0 # Determines bin size for NPart plot
 npMin    = 0
-npMax    = 20
+npMax    = 20.
 npBins   = int(npMax/stepsize)
 npXTitle = "Radiation Lengths"
 npYTitle = "<NParticles>"
@@ -99,9 +101,11 @@ trkL_diff = []
 #
 ## Loop
 #
-
+#counter = 0
 for line in infile:
-    
+    #counter == 100: break
+    #counter += 1
+
     # Initialize stuff at beginning of evnet
     if "Event" in line:
         nPartSum  = getNParticles()
