@@ -56,6 +56,9 @@ class SteppingAction : public G4UserSteppingAction
 			G4double n_,
 			G4double c_);
 
+  // Testing
+  G4double getBeta(const G4Step* step);
+
 };
 
 #endif

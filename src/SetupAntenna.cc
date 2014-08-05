@@ -18,7 +18,8 @@ SetupAntenna::SetupAntenna()
   
   // Angles
   std::vector<G4double> angles;
-  angles.push_back(55.829616);
+  angles.push_back(55.8197842754213767);
+  //angles.push_back(55.829616);
   //angles.push_back(55.929616);
   //angles.push_back(56.029616);
   //angles.push_back(56.129616);

@@ -1,3 +1,8 @@
+2014-08-5 Matt:
+	* Adding vector potential calculation. First pass looks reasonable.
+	* Update SetupAntenna to loop over angles for fixed position.
+	* Fixed timing bin factor in calculation of vector potential
+
 2014-08-04 Matt:
 	* Minor updates to settings.
 	* Going to add calculation of electric field for step information. Tag first

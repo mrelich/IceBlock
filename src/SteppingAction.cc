@@ -111,6 +111,9 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   G4Track* track = aStep->GetTrack();
   if( abs(track->GetParticleDefinition()->GetPDGEncoding()) != 11) return;
 
+  // Placing a 1 MeV Energy threhold
+  if( aStep->GetPostStepPoint()->GetTotalEnergy()/MeV < 1 ) return;
+
   // Working in SI Units throughout in order to try to remove
   // any unit conversion errors.
   
@@ -128,7 +131,9 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   G4ThreeVector P1 = aStep->GetPostStepPoint()->GetPosition()   / m;
   G4double      t1 = aStep->GetPostStepPoint()->GetGlobalTime() / s;
 
-  if(t1 == t0) return;
+  // If track length or time are same do not use this track
+  if( (P0-P1).mag() == 0 ) return;
+  if(t1 == t0)             return;
 
   // Now Get midpoint times and position
   //G4double      tm = (t0 + t1)/2.;
@@ -138,7 +143,11 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   
   // Set the velocity vector in m/s
   G4ThreeVector V = getVelocity(P0,P1,t0,t1);
-  
+  //G4double beta = getBeta(aStep);
+  //if( beta != beta ) G4cout<<" Beta is nan "<<G4endl;
+  //V = (V/V.mag()) * beta * m_c;
+
+
   // Loop over each antenna and calculate the vector
   // potential for that particular antenna
   for(unsigned int iA=0; iA<m_ants->size(); ++iA){
@@ -225,13 +234,19 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
       for(int ibin = iStart; ibin < iEnd; ++ibin){
 	factor = 1./dtD_dt;
 	if( tD0 <= tD1 ){
-	  if( ibin == iStart ) factor = ((iStart+1)*AntTstep - tD0)/AntTstep/dtD_dt;
-	  if( ibin == iEnd )   factor = (tD1 - (iEnd)*AntTstep)/AntTstep/dtD_dt;
+	  if( ibin == iStart ) factor = ((AntTmin+(iStart+1)*AntTstep) - tD0)/AntTstep/dtD_dt;
+	  if( ibin == iEnd )   factor = (tD1 - (AntTmin+(iEnd)*AntTstep))/AntTstep/dtD_dt;
 	}
 	else{
-	  if( ibin == iStart ) factor = ((iStart+1)*AntTstep - tD1)/AntTstep/dtD_dt;
-	  if( ibin == iEnd )   factor = (tD0 - (iEnd)*AntTstep)/AntTstep/dtD_dt;
+	  if( ibin == iStart ) factor = ((AntTmin+(iStart+1)*AntTstep) - tD1)/AntTstep/dtD_dt;
+	  if( ibin == iEnd )   factor = (tD0 - (AntTmin+(iEnd)*AntTstep))/AntTstep/dtD_dt;
 	}
+	
+	if(factor < 0) 
+	  G4cout<<"Factor: "<<factor
+	      <<" ibin: "<<ibin
+	      <<" start: "<<iStart
+	      <<" end: "<<iEnd<<G4endl;
 	
 	// Save the result
 	ant->addPoint(ibin, Ax * factor, Ay * factor, Az * factor);
@@ -264,6 +279,20 @@ G4double SteppingAction::getTDetector(G4ThreeVector ant,
 
 }
 
+//-----------------------------------------------------------------//
+// Get Beta ZHS style
+//-----------------------------------------------------------------//
+G4double SteppingAction::getBeta(const G4Step* step)
+{
+
+  G4double E0 = step->GetPreStepPoint()->GetTotalEnergy() / MeV;
+  G4double E1 = step->GetPostStepPoint()->GetTotalEnergy() / MeV;
+  
+  G4double Eavg = (E1+E0)/2.;
+  
+  return sqrt( 1 - 1/pow(Eavg/0.511,2));
+
+}
 
 //-----------------------------------------------------------------//
 // Get Velocity vector
