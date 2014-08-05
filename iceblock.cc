@@ -18,8 +18,12 @@
 #include "TrackingAction.hh"
 //#include "MyTreeWriter.hh"
 
+#include "SetupAntenna.hh"
+
 #include <sstream>
 #include <fstream>
+//#include <ctime>
+#include "time.h"
 
 //---------------------------------------------------//
 // Help menu
@@ -67,6 +71,10 @@ void help()
 int main(int argc, char** argv)
 {
 
+  // Store time
+  clock_t tStart = clock();
+  
+  // Options
   G4int nEvents          = 1;     // number of events
   G4int nParticles       = 1;     // number of particles
   G4int beamEnergy       = 1000; // MeV
@@ -124,6 +132,10 @@ int main(int argc, char** argv)
   // If threshold is set, append to file
   if(useThreshold) ss << "_thresh" << threshold << "MeV";
 
+  // Setup the Antennas
+  SetupAntenna* m_AntSetup = new SetupAntenna();
+  std::vector<Antenna*> m_Ants = m_AntSetup->getAnts();
+
   // My own stepping
   //G4VSteppingVerbose* verboseStep = new SteppingVerbose(ss.str());
   //G4VSteppingVerbose::SetInstance(verboseStep);
@@ -144,6 +156,7 @@ int main(int argc, char** argv)
   // Open up a file for output
   std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
+  std::ofstream EFieldOut(("efield/"+ss.str()+".dat").c_str(), std::ofstream::out);
 
   // My output tree
   // This seems to take too long!!
@@ -157,8 +170,9 @@ int main(int argc, char** argv)
 								 nParticles);  
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
-  runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput));
-  //runManager->SetUserAction(new SteppingAction(&stepOutput));
+  runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput,
+					    &EFieldOut, &m_Ants));
+  runManager->SetUserAction(new SteppingAction(&stepOutput, &m_Ants));
   runManager->SetUserAction(new TrackingAction(&trackOutput));
 
   // Initialize G4 Kernel
@@ -181,6 +195,10 @@ int main(int argc, char** argv)
   stepOutput.close();
 
   delete runManager;
+  cout<<"Number of particles"<<nParticles<<endl;
+  cout<<"Runtime is: "<<(double)(clock() - tStart)/CLOCKS_PER_SEC<<" seconds "<<endl;
+
+  delete m_AntSetup;
 
   return 0;
 
