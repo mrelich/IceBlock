@@ -9,6 +9,9 @@
 
 #include "Antenna.hh"
 #include <vector>
+#include <string>
+#include <fstream>
+#include <iostream>
 
 class SetupAntenna
 {
@@ -16,7 +19,7 @@ class SetupAntenna
  public:
   
   // Constructor
-  SetupAntenna();
+  SetupAntenna(std::string infile = "");
 
   // Destructor
   ~SetupAntenna();
@@ -27,6 +30,9 @@ class SetupAntenna
  private:
   
   std::vector<Antenna*> m_ants;
+
+  // Method to read antenna config from files
+  void readAntennaFromFile(std::string infile);
 
 };
 

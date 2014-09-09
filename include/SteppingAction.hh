@@ -30,6 +30,9 @@ class SteppingAction : public G4UserSteppingAction
   // Write the vector potential info
   void VPotentialZHSStyle(const G4Step*);
 
+  // Write the vector potential info endpoint style
+  void VPotentialEndpoint(const G4Step*);
+
  private:
 
   std::ofstream* m_output;  

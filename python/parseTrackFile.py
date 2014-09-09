@@ -24,50 +24,62 @@ def getTrkZ(line):
     return float((line.split(" "))[2])
 
 #-----------------------------#
+# Get Time
+#-----------------------------#
+def getTrkT(line):
+    return float((line.split(" "))[3])
+
+#-----------------------------#
 # Get Kinetic Energy
 #-----------------------------#
 def getTrkE(line):
-    return float((line.split(" "))[3])
+    return float((line.split(" "))[4])
 
 #-----------------------------#
 # Get TotalE
 #-----------------------------#
 def getTrkTotalE(line):
-    return float((line.split(" "))[4])
+    return float((line.split(" "))[5])
 
 #-----------------------------#
 # Get XPos
 #-----------------------------#
 def getTrkXFinal(line):
-    return float((line.split(" "))[5])
+    return float((line.split(" "))[6])
 
 #-----------------------------#
 # Get YPos
 #-----------------------------#
 def getTrkYFinal(line):
-    return float((line.split(" "))[6])
+    return float((line.split(" "))[7])
 
 #-----------------------------#
 # Get ZPos
 #-----------------------------#
 def getTrkZFinal(line):
-    return float((line.split(" "))[7])
+    return float((line.split(" "))[8])
+
+#-----------------------------#
+# Get T
+#-----------------------------#
+def getTrkTFinal(line):
+    return float((line.split(" "))[9])
 
 #-----------------------------#
 # Get TrkID
 #-----------------------------#
 def getTrkID(line):
-    return int((line.split(" "))[8])
+    return int((line.split(" "))[10])
 
 #-----------------------------#
 # Get ParentID
 #-----------------------------#
 def getTrkParentID(line):
-    return int((line.split(" "))[9])
+    return int((line.split(" "))[11])
 
 #-----------------------------#
 # Get PDG
 #-----------------------------#
 def getTrkPDG(line):
-    return int((line.split(" "))[10])
+    return int((line.split(" "))[12])
 

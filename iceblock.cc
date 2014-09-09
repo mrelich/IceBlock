@@ -59,6 +59,9 @@ void help()
   cout << "-c <float>" << endl;
   cout << "\t Specify the energy threshold to use in MeV" << endl;
   cout << "\t Default is 0" << endl;
+  cout << "-i <file.txt> " << endl;
+  cout << "\t Defaule is NULL" << endl;
+  cout << "\t\tSpecify input file to read antenna config from"<<endl;
   cout << "-------------------------------------------" << endl;
   cout << endl;
   cout << endl;
@@ -82,6 +85,7 @@ int main(int argc, char** argv)
   std::string partType   = "e-";   
   G4double threshold     = 0;
   bool useThreshold      = false;
+  std::string antFile    = "";
 
   // Options
   for(int i=1; i<argc; ++i){
@@ -99,6 +103,8 @@ int main(int argc, char** argv)
       threshold = atof( argv[++i] );
       useThreshold = true;
     }
+    else if( strcmp(argv[i], "-i") == 0 )
+      antFile = argv[++i];
     else{
       help();
       return 0;
@@ -129,12 +135,27 @@ int main(int argc, char** argv)
   // Add the number of particles
   ss << "_np" << nParticles;
 
+  // Decide if antenna file specified
+  if( !antFile.empty() ){
+    string s_ant = antFile.substr(0,antFile.find(".txt"));
+    s_ant        = s_ant.substr(antFile.find("/")+1,-1);
+    cout<<s_ant<<endl;
+    ss << "_" << s_ant;
+  }
+  else{
+    //ss << "_HardCodedAntenna_R1000m_newV";
+    ss << "_HardCodedAntenna_R1000m_oldV";
+    //ss << "_HardCodedAntenna_R100m_newV";
+    //ss << "_HardCodedAntenna_BetaCalc";
+  }
+
   // If threshold is set, append to file
   if(useThreshold) ss << "_thresh" << threshold << "MeV";
 
   // Setup the Antennas
-  SetupAntenna* m_AntSetup = new SetupAntenna();
+  SetupAntenna* m_AntSetup = new SetupAntenna(antFile);
   std::vector<Antenna*> m_Ants = m_AntSetup->getAnts();
+  
 
   // My own stepping
   //G4VSteppingVerbose* verboseStep = new SteppingVerbose(ss.str());
@@ -156,7 +177,8 @@ int main(int argc, char** argv)
   // Open up a file for output
   std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
-  std::ofstream EFieldOut(("efield/"+ss.str()+".dat").c_str(), std::ofstream::out);
+  std::ofstream EFieldOut(("efield/E_"+ss.str()+".dat").c_str(), std::ofstream::out);
+  std::ofstream APotOut(("efield/A_"+ss.str()+".dat").c_str(), std::ofstream::out);
 
   // My output tree
   // This seems to take too long!!
@@ -171,7 +193,8 @@ int main(int argc, char** argv)
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
   runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput,
-					    &EFieldOut, &m_Ants));
+					    &APotOut, &EFieldOut, 
+					    &m_Ants));
   runManager->SetUserAction(new SteppingAction(&stepOutput, &m_Ants));
   runManager->SetUserAction(new TrackingAction(&trackOutput));
 
@@ -193,6 +216,9 @@ int main(int argc, char** argv)
 
   trackOutput.close();
   stepOutput.close();
+  EFieldOut.close();
+  APotOut.close();
+    
 
   delete runManager;
   cout<<"Number of particles"<<nParticles<<endl;

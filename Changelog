@@ -1,3 +1,14 @@
+2014-09-09 Matt:
+	* Committing debugged vector potential calculation. Right now two ways to calculate the velocity.
+	* Adding python script to make Vector potential plots
+	* Adding python script to make Cherenkov Ring plots
+	* Adding python script to make filelists for Zscan and Cherenkov scan
+	* Adding scripts to compare velocity calculation procedure
+	* Adding scripts to format cherenkov scan results
+	* Adding script to format the vector potential comparison for ZHS vs. Geant4
+	* Adding class for Antenna and one for setting up the antenna
+	
+
 2014-08-5 Matt:
 	* Adding vector potential calculation. First pass looks reasonable.
 	* Update SetupAntenna to loop over angles for fixed position.

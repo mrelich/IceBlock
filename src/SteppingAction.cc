@@ -35,6 +35,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 
   //WriteSteps(aStep);
   VPotentialZHSStyle(aStep);
+  //VPotentialEndpoint(aStep);
 }
 
 //-----------------------------------------------------------------//
@@ -112,7 +113,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   if( abs(track->GetParticleDefinition()->GetPDGEncoding()) != 11) return;
 
   // Placing a 1 MeV Energy threhold
-  if( aStep->GetPostStepPoint()->GetTotalEnergy()/MeV < 1 ) return;
+  //if( aStep->GetPostStepPoint()->GetTotalEnergy()/MeV < 10 /*0.511*/ ) return;
 
   // Working in SI Units throughout in order to try to remove
   // any unit conversion errors.
@@ -121,9 +122,11 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   // file that is more easily changed among all scripts
   const G4double m_c  = 2.99792458e8;
   const G4double m_n  = 1.78;      // index of refraction for ice
-  const G4double m_mu = 1e-7;      // permeability
-  const G4double m_e  = 1.602e-19; // electric charge 
   const G4double m_pi = 3.141592653589;
+  const G4double m_mu = 4*m_pi*1e-7;      // permeability
+  const G4double m_e  = 1.602e-19; // electric charge 
+
+
 
   // Get the Pre and post step points and times
   G4ThreeVector P0 = aStep->GetPreStepPoint()->GetPosition()    / m;
@@ -131,21 +134,35 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   G4ThreeVector P1 = aStep->GetPostStepPoint()->GetPosition()   / m;
   G4double      t1 = aStep->GetPostStepPoint()->GetGlobalTime() / s;
 
+  /*
+  // Alternative calculation
+  G4ThreeVector P0   = aStep->GetPreStepPoint()->GetPosition()    / m;
+  G4double      t0   = aStep->GetPreStepPoint()->GetGlobalTime()  / s;
+
+  G4double      Vi   = (aStep->GetPreStepPoint()->GetVelocity() +
+			aStep->GetPostStepPoint()->GetVelocity())/ (m/s);
+  Vi = Vi/2.;
+  G4ThreeVector post = aStep->GetPostStepPoint()->GetPosition()    / m;
+  G4ThreeVector uv   = (post-P0)/(post-P0).mag();
+
+  G4double      t1   = aStep->GetPostStepPoint()->GetGlobalTime()  / s;
+  G4ThreeVector P1   = P0 + uv * Vi * (t1-t0);
+
+  */
+
   // If track length or time are same do not use this track
   if( (P0-P1).mag() == 0 ) return;
   if(t1 == t0)             return;
-
-  // Now Get midpoint times and position
-  //G4double      tm = (t0 + t1)/2.;
-  G4ThreeVector Pm = G4ThreeVector( (P0.x() + P1.x())/2.,
-				    (P0.y() + P1.y())/2.,
-				    (P0.z() + P1.z())/2.);
   
   // Set the velocity vector in m/s
   G4ThreeVector V = getVelocity(P0,P1,t0,t1);
-  //G4double beta = getBeta(aStep);
-  //if( beta != beta ) G4cout<<" Beta is nan "<<G4endl;
-  //V = (V/V.mag()) * beta * m_c;
+  //G4ThreeVector V = ((aStep->GetPostStepPoint()->GetVelocity()*s/m + 
+  //aStep->GetPreStepPoint()->GetVelocity()*s/m) / 2.) * (P1-P0)/(P1-P0).mag();    
+  
+  // Now Get midpoint times and position
+  G4ThreeVector Pm = G4ThreeVector( (P0.x() + P1.x())/2.,
+				    (P0.y() + P1.y())/2.,
+				    (P0.z() + P1.z())/2.);
 
 
   // Loop over each antenna and calculate the vector
@@ -164,14 +181,13 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     setUnitVector(AntPos, Pm, u, R);
     
     // Get the detector time
-    G4double tD0 = getTDetector(AntPos, P0, t0, m_n, m_c);				
-    G4double tD1 = getTDetector(AntPos, P1, t1, m_n, m_c);				
-
-    //G4acout<<"tD: "<<tD0<<" "<<tD1<<" t: "<<t0<<" "<<t1<<G4endl;
+    G4double tD0 = getTDetector(AntPos, P0, t0, m_n, m_c);
+    G4double tD1 = getTDetector(AntPos, P1, t1, m_n, m_c);
+      
+      //G4acout<<"tD: "<<tD0<<" "<<tD1<<" t: "<<t0<<" "<<t1<<G4endl;
 
     // Load the antenna timing information
     G4double AntTmin  = ant->getTmin() * 1e-9;  // in seconds
-    //G4double AntTmax  = ant->getTmax() * 1e-9;  // in seconds
     G4double AntTstep = ant->getTStep() * 1e-9; // in seconds
     
     // Locate what bin our particle falls in
@@ -191,8 +207,10 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     // Don't count if out of bounds
     if(iEnd < iFirstBin)  continue;
     if(iStart > iLastBin) continue;
-    if(iEnd > iLastBin)    iEnd = iLastBin;
-    if(iStart < iFirstBin) iStart = iFirstBin;
+    //if(iEnd > iLastBin)    iEnd = iLastBin;
+    //if(iStart < iFirstBin) iStart = iFirstBin;
+    if(iEnd > iLastBin)    continue;
+    if(iStart < iFirstBin) continue;
 
     // Debug times
     //G4cout<<"\ttD0: "<<tD0<<" tD1: "<<" bins: "<<iStart<<" "<<iEnd
@@ -201,7 +219,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     // Define the constant part of vector potential
     G4double charge = m_e * track->GetParticleDefinition()->GetPDGCharge();
     G4double constA = m_mu * charge / (4*m_pi*R);
-    
+
     // We are ready to calculate the vector potential for
     // each vector component
     G4double Ax = constA * ( V.x() - V.dot(u)*u.x() );
@@ -229,9 +247,8 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
 
     // Case 2 -- step crosses multiple bins
     else{
-      
       // Loop over the bins
-      for(int ibin = iStart; ibin < iEnd; ++ibin){
+      for(int ibin = iStart; ibin <= iEnd; ++ibin){
 	factor = 1./dtD_dt;
 	if( tD0 <= tD1 ){
 	  if( ibin == iStart ) factor = ((AntTmin+(iStart+1)*AntTstep) - tD0)/AntTstep/dtD_dt;
@@ -290,7 +307,7 @@ G4double SteppingAction::getBeta(const G4Step* step)
   
   G4double Eavg = (E1+E0)/2.;
   
-  return sqrt( 1 - 1/pow(Eavg/0.511,2));
+  return sqrt(1 - 1/pow(Eavg/0.511,2));
 
 }
 
@@ -332,6 +349,15 @@ void SteppingAction::setUnitVector(G4ThreeVector v_ant,
   
   // Now divide and make vector unit vector
   u /= R;
+
+
+}
+
+//-----------------------------------------------------------------//
+void SteppingAction::VPotentialEndpoint(const G4Step* aStep)
+{
+ 
+  // FILL THIS IN TOMORROW AUG 27
 
 
 }

@@ -17,6 +17,8 @@ def makeProfile(name, nxbins, xmin, xmax, color, marker,
     prof.SetMarkerStyle(marker)
     prof.GetXaxis().SetTitle(xtitle)
     prof.GetYaxis().SetTitle(ytitle)
+    prof.SetMarkerSize(0.5);
+    prof.Sumw2()
     return prof
 
 def makeProfileVar(name, xbins, color, marker,
@@ -27,6 +29,7 @@ def makeProfileVar(name, xbins, color, marker,
     prof.SetMarkerStyle(marker)
     prof.GetXaxis().SetTitle(xtitle)
     prof.GetYaxis().SetTitle(ytitle)
+    prof.Sumw2()
     return prof
 
 
@@ -42,6 +45,7 @@ def makeHist(name, nxbins, xmin, xmax, color, marker,
     hist.SetMarkerStyle(marker)
     hist.GetXaxis().SetTitle(xtitle)
     hist.GetYaxis().SetTitle(ytitle)
+    hist.Sumw2()
     return hist
 
 
