@@ -129,12 +129,13 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
 
 
   // Get the Pre and post step points and times
+  /*
   G4ThreeVector P0 = aStep->GetPreStepPoint()->GetPosition()    / m;
   G4double      t0 = aStep->GetPreStepPoint()->GetGlobalTime()  / s;
   G4ThreeVector P1 = aStep->GetPostStepPoint()->GetPosition()   / m;
   G4double      t1 = aStep->GetPostStepPoint()->GetGlobalTime() / s;
+  */
 
-  /*
   // Alternative calculation
   G4ThreeVector P0   = aStep->GetPreStepPoint()->GetPosition()    / m;
   G4double      t0   = aStep->GetPreStepPoint()->GetGlobalTime()  / s;
@@ -148,7 +149,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   G4double      t1   = aStep->GetPostStepPoint()->GetGlobalTime()  / s;
   G4ThreeVector P1   = P0 + uv * Vi * (t1-t0);
 
-  */
+
 
   // If track length or time are same do not use this track
   if( (P0-P1).mag() == 0 ) return;
