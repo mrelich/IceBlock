@@ -228,3 +228,16 @@ TH2F* getHist2(TFile* file, TString pname, TString xtitle,
 
 }
 
+//------------------------------------------------------------//
+// Set graph attributes
+//------------------------------------------------------------//
+void setAtt(TGraph* &gr, TString xtitle, TString ytitle, int color)
+{
+
+  gr->GetXaxis()->SetTitle(xtitle.Data());
+  gr->GetYaxis()->SetTitle(ytitle.Data());
+  gr->SetLineColor(color);
+  gr->SetMarkerColor(color);
+  gr->SetTitle("");
+
+}

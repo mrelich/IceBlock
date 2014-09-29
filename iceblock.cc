@@ -144,9 +144,10 @@ int main(int argc, char** argv)
   }
   else{
     //ss << "_HardCodedAntenna_R1000m_newV";
-    ss << "_HardCodedAntenna_R1000m_oldV";
+    //ss << "_HardCodedAntenna_R1000m_oldV";
     //ss << "_HardCodedAntenna_R100m_newV";
     //ss << "_HardCodedAntenna_BetaCalc";
+    ss << "_HardCodedAntenna_R10m";
   }
 
   // If threshold is set, append to file

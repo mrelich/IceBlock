@@ -22,8 +22,8 @@ SetupAntenna::SetupAntenna(std::string infile)
   // Trying to match some ZHS results. 
   // So put the antenna at R = 100m and
   // for several angles.
-  G4double R = 1000;
-  //G4double R = 100;
+  //G4double R = 1000;
+  G4double R = 10;
 
   // Angles
   std::vector<G4double> angles;

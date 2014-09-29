@@ -17,8 +17,8 @@ rootfiledir = "efieldroot/"
 # including the step size.
 #---------------------------------------------#
 
-nbins = 1000
-tStep = 0.02 # ns
+nbins = 2000
+tStep = 0.01 # ns
 
 #---------------------------------------------#
 # Specify input variables necessary here
@@ -69,7 +69,8 @@ prof_VPot_X = []
 prof_VPot_Y = []
 prof_VPot_Z = []
 prof_VPot   = []
-prof_EField = []
+
+prof_VPot_perEvent = []
 
 currentEvent = -1
 curAnt = 0
@@ -81,6 +82,8 @@ for line in infile:
         currentEvent += 1
         if currentEvent % 5 == 0: 
             print "Current Event: ", currentEvent
+        eventVector = []
+        prof_VPot_perEvent.append( eventVector )
         continue
 
 
@@ -131,62 +134,26 @@ for line in infile:
                                       25,
                                       "time [ns]",
                                       "A [Vs/m]") )
+
+    # Now handle the per event level results
+    if len(prof_VPot_perEvent[currentEvent]) <= curAnt:
+        VPEvtName = "A_" + curAntName + "_Event" + str(currentEvent)
+        print "Making: ", VPEvtName
+        prof_VPot_perEvent[currentEvent].append( makeProfile(VPEvtName,nbins,t,
+                                                             t+nbins*tStep,
+                                                             kBlue,
+                                                             25,
+                                                             "time [ns]",
+                                                             "A [Vs/m]") )
+                                                 
+                                                             
     
     # Fill Antenna vector potential
     prof_VPot_X[curAnt].Fill(t,Ax)
     prof_VPot_Y[curAnt].Fill(t,Ay)
     prof_VPot_Z[curAnt].Fill(t,Az)
     prof_VPot[curAnt].Fill(t,sqrt(Ax*Ax+Ay*Ay+Az*Az))
-
-
-#----------------------------------------------------#
-# Now calculate the electric field from the profiles
-# Whereas this will represent that average electric
-# field from the average vector potential
-#----------------------------------------------------#
-def makeEField(profList):
-    
-    outfile.cd()
-    for prof in profList:
-    
-        # Specify the name
-        name  = prof.GetName()
-        sl = name.split("A_")
-        EName = "E_" + sl[1]
-
-    
-        # Make the new histogram
-        t = prof.GetXaxis().GetBinLowEdge(1)
-        Efield = makeProfile(EName, 
-                             nbins,
-                             t,
-                             t+nbins*tStep,
-                             kRed,
-                             20,
-                             "time [ns]",
-                             "E [V/m]")
-
-        # Loop over bins
-        for i in range(nbins):
-        
-            binWidth = prof.GetBinWidth(i)
-            time     = prof.GetBinCenter(i)
-            A0       = prof.GetBinContent(i)
-            A1       = prof.GetBinContent(i+1)
-            #print "Bin width: ", binWidth, " time: ", time, " A0: ", A0, " A1: ", A1
-            Efield.Fill(time, (A1-A0)/(binWidth*1e-9))
-
-        # end loop over bins
-        Efield.Write()
-        Efield.Delete()
-        
-    # end loop over profiles
-    return
-
-makeEField(prof_VPot_X)
-makeEField(prof_VPot_Y)
-makeEField(prof_VPot_Z)
-makeEField(prof_VPot)
+    prof_VPot_perEvent[currentEvent][curAnt].Fill(t,sqrt(Ax*Ax+Ay*Ay+Az*Az))
 
 # Clean up
 infile.close()
