@@ -19,7 +19,7 @@ class EventAction : public G4UserEventAction
   
   // Constructor/Destructor
   EventAction(std::ofstream* trkFile, std::ofstream* stepFile,
-	      std::ofstream* vFile, std::ofstream* eFile, 
+	      std::ofstream* vFile,
 	      std::vector<Antenna*>* ants);
   ~EventAction();
 
@@ -31,7 +31,6 @@ class EventAction : public G4UserEventAction
   std::ofstream* m_stepOutput;       // File to store step output
   //MyTreeWriter* m_treeWriter; 
   std::ofstream* m_VPotOut;           // File for vector potential
-  std::ofstream* m_EfieldOut;         // File to store E-field vars
   std::vector<Antenna*>* m_ants;      // Pointer to antenna
 
 };

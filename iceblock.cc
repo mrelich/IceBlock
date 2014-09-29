@@ -177,7 +177,6 @@ int main(int argc, char** argv)
   // Open up a file for output
   std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
-  std::ofstream EFieldOut(("efield/E_"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream APotOut(("efield/A_"+ss.str()+".dat").c_str(), std::ofstream::out);
 
   // My output tree
@@ -193,7 +192,7 @@ int main(int argc, char** argv)
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
   runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput,
-					    &APotOut, &EFieldOut, 
+					    &APotOut,
 					    &m_Ants));
   runManager->SetUserAction(new SteppingAction(&stepOutput, &m_Ants));
   runManager->SetUserAction(new TrackingAction(&trackOutput));
@@ -216,7 +215,6 @@ int main(int argc, char** argv)
 
   trackOutput.close();
   stepOutput.close();
-  EFieldOut.close();
   APotOut.close();
     
 

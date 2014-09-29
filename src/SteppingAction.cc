@@ -129,6 +129,8 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
 
 
   // Get the Pre and post step points and times
+  // This is taken from Anne's code, and seems to give
+  // velocities greater than light in vacuum for some steps.
   /*
   G4ThreeVector P0 = aStep->GetPreStepPoint()->GetPosition()    / m;
   G4double      t0 = aStep->GetPreStepPoint()->GetGlobalTime()  / s;
@@ -137,6 +139,10 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   */
 
   // Alternative calculation
+  // This will use average velocity between steps. Much better
+  // than taking pre and post step position and time where we 
+  // can have speeds greater than light in vacuum due to neglecting
+  // acceleration.
   G4ThreeVector P0   = aStep->GetPreStepPoint()->GetPosition()    / m;
   G4double      t0   = aStep->GetPreStepPoint()->GetGlobalTime()  / s;
 
@@ -354,11 +360,3 @@ void SteppingAction::setUnitVector(G4ThreeVector v_ant,
 
 }
 
-//-----------------------------------------------------------------//
-void SteppingAction::VPotentialEndpoint(const G4Step* aStep)
-{
- 
-  // FILL THIS IN TOMORROW AUG 27
-
-
-}

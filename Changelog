@@ -1,3 +1,7 @@
+2014-09-29 Matt:
+	* Updating some minor changes after figuring out difference with ZHS.
+	* Committing verified version with velocity correction in place.
+
 2014-09-09 Matt:
 	* Committing debugged vector potential calculation. Right now two ways to calculate the velocity.
 	* Adding python script to make Vector potential plots
@@ -7,7 +11,7 @@
 	* Adding scripts to format cherenkov scan results
 	* Adding script to format the vector potential comparison for ZHS vs. Geant4
 	* Adding class for Antenna and one for setting up the antenna
-	
+
 
 2014-08-5 Matt:
 	* Adding vector potential calculation. First pass looks reasonable.

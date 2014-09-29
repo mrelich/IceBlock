@@ -9,8 +9,8 @@
 // Scale factor is needed.  Since ZHS gives R*A, and G4 gives 
 // just A, we need to scale by the distance to antenna.  So
 // in this case it is 100m
-double m_R = 1000; //100.;
-//double m_R = 100.; //100.;
+//double m_R = 1000; //100.;
+double m_R = 100.; //100.;
 //double m_R = 400.;
 //double m_R = 1000.;
 
@@ -27,7 +27,8 @@ void VPCompareZHS(int opt = -1, bool save = false)
   m_save = save;
 
   // Specify ZHS and G4 files
-  TString zhsdir = "../ZHS_ELSEnergy/rootfiles/";
+  //TString zhsdir = "../ZHS_ELSEnergy/rootfiles/";
+  TString zhsdir = "../ZHS_AngularScan/rootfiles/";
   vector<TString> f_zhs;
   TString g4dir = "efieldroot/";
   vector<TString> f_g4;
@@ -58,9 +59,70 @@ void VPCompareZHS(int opt = -1, bool save = false)
     //f_g4.push_back(g4dir+"Output_20Evt_40MeV_100Prim_HardCodedAntenna_R100m.root");
     //f_g4.push_back(g4dir+"Output_50Evt_40MeV_100Prim_HardCodedAntenna_R1000m.root");
     //savenames.push_back("VP_100Evt_40GeV_1Prim");
-  }
+  }  
   else if(opt == 3){
     plotPeakComp();
+    return;
+  }
+  else if(opt == 4){
+   
+    // Specify files
+    f_zhs.push_back(zhsdir+"beam10e3MeV_1Prim_50NEvt_Angular.root");
+    f_g4.push_back(g4dir+"Output_50Evt_10GeV_1Prim_Rscan_100m.root");
+
+    // Add ZHS histograms
+    vector<TString> ZHS_plots;
+    ZHS_plots.push_back("VP_avg_0.0");
+    ZHS_plots.push_back("VP_avg_5.0");
+    ZHS_plots.push_back("VP_avg_10.0");
+    ZHS_plots.push_back("VP_avg_15.0");
+    ZHS_plots.push_back("VP_avg_20.0");
+    ZHS_plots.push_back("VP_avg_25.0");
+    ZHS_plots.push_back("VP_avg_30.0");
+    ZHS_plots.push_back("VP_avg_35.0");
+    ZHS_plots.push_back("VP_avg_40.0");
+    ZHS_plots.push_back("VP_avg_45.0");
+    ZHS_plots.push_back("VP_avg_50.0");
+    ZHS_plots.push_back("VP_avg_55.0");
+    ZHS_plots.push_back("VP_avg_60.0");
+    ZHS_plots.push_back("VP_avg_65.0");
+    ZHS_plots.push_back("VP_avg_70.0");
+    ZHS_plots.push_back("VP_avg_75.0");
+    ZHS_plots.push_back("VP_avg_80.0");
+    ZHS_plots.push_back("VP_avg_85.0");
+    ZHS_plots.push_back("VP_avg_90.0");
+
+    vector<TString> G4_plots;
+    G4_plots.push_back("A_AntNum_0_pos_0_0_100");
+    G4_plots.push_back("A_AntNum_1_pos_8.71557_0_99.6195");
+    G4_plots.push_back("A_AntNum_2_pos_17.3648_0_98.4808");
+    G4_plots.push_back("A_AntNum_3_pos_25.8819_0_96.5926");
+    G4_plots.push_back("A_AntNum_4_pos_34.202_0_93.9693");
+    G4_plots.push_back("A_AntNum_5_pos_42.2618_0_90.6308");
+    G4_plots.push_back("A_AntNum_6_pos_50_0_86.6025");
+    G4_plots.push_back("A_AntNum_7_pos_57.3576_0_81.9152");
+    G4_plots.push_back("A_AntNum_8_pos_64.2788_0_76.6044");
+    G4_plots.push_back("A_AntNum_9_pos_70.7107_0_70.7107");
+    G4_plots.push_back("A_AntNum_10_pos_76.6044_0_64.2788");
+    G4_plots.push_back("A_AntNum_11_pos_81.9152_0_57.3576");
+    G4_plots.push_back("A_AntNum_12_pos_86.6025_0_50");
+    G4_plots.push_back("A_AntNum_13_pos_90.6308_0_42.2618");
+    G4_plots.push_back("A_AntNum_14_pos_93.9693_0_34.202");
+    G4_plots.push_back("A_AntNum_15_pos_96.5926_0_25.8819");
+    G4_plots.push_back("A_AntNum_16_pos_98.4808_0_17.3648");
+    G4_plots.push_back("A_AntNum_17_pos_99.6195_0_8.71557");
+    G4_plots.push_back("A_AntNum_18_pos_100_0_6.12323e-15");
+
+    // Now loop over plots
+    for(unsigned int i=0; i<G4_plots.size(); ++i){
+      cout<<"Workgint on: "<<i<<endl;
+      TString zhs_plot = ZHS_plots.at(i);
+      TString g4_plot  = G4_plots.at(i);
+      //plotWithRatio(f_zhs, f_g4, zhs_plot, g4_plot, savenames);
+      savenames.clear();
+      savenames.push_back("ZHSCompare_10GeV_100m_"+zhs_plot);
+      plot(f_zhs, f_g4, zhs_plot, g4_plot, savenames);
+    }
     return;
   }
 
@@ -74,6 +136,7 @@ void VPCompareZHS(int opt = -1, bool save = false)
 
   // Now plot
   //plot(f_zhs, f_g4, p_zhsname, p_g4name,savenames);
+  //plotWithRatio(f_zhs, f_g4, p_zhsname, p_g4name,savenames);
   plotWithRatio(f_zhs, f_g4, p_zhsname, p_g4name,savenames);
   
 }
@@ -144,6 +207,11 @@ void plot(vector<TString> f_zhs,
       //TString save = m_savedir + p_g4 + "_ZHSCherAngle.png";
       TString save = m_savedir + savenames.at(i) + ".png";
       c->SaveAs(save.Data());
+
+      delete c;
+      delete h_resetZ;
+      delete leg;
+
     }
 
   }// end loop over files
@@ -279,7 +347,8 @@ TH1D* resetZHS(TProfile* zhs, TProfile* g4,
   zhs_reset->SetMarkerColor(color);
 
   // Find bin containing maximum value of geant4 profile
-  double maximum = g4->GetXaxis()->GetBinCenter(g4->GetMaximumBin());
+  double maximum  = g4->GetXaxis()->GetBinCenter(g4->GetMaximumBin());
+  maximum -= zhs->GetXaxis()->GetBinCenter(zhs->GetMaximumBin());
 
   // Offset ZHS by this maximum bin
   int nbins = zhs->GetNbinsX(); 
