@@ -16,17 +16,22 @@ double m_scale  = 1;  // scaling factor for
 //-------------------------------------------------//
 void EField()
 {
-
+  
   // Specify the input file name
   TString dir   = "efieldroot/";
-  TString fname = dir + "Output_5Evt_40MeV_1000Prim_HardCodedAntenna_R10m.root";
-  
-  // Plot single
-  //plotSingle(fname);
+  //TString fname = dir + "Output_5Evt_40MeV_1000Prim_HardCodedAntenna_R10m.root";
+  //TString fname = dir + "Output_5Evt_40MeV_10000Prim_HardCodedAntenna_R10m.root";
+  TString fname = dir + "Output_57Evt_40MeV_1000Prim_HardCodedAntenna_ROldConfig.root";
 
+  // Calculate the scale factor
+  m_scale = 1.e9 / 57 / 1000; 
+  cout<<"Scaling by : "<<m_scale<<endl;
+ 
+  // Plot single
+  plotSingle(fname);
 
   // Plot multiple
-  plotMultiple(fname);
+  //plotMultiple(fname);
 
 }
 
@@ -40,10 +45,12 @@ void plotSingle(TString infile)
   TFile* file = new TFile(infile.Data());
 
   // Currently plot at the Cherenkov Angle
-  TString pname = "A_AntNum_0_pos_8.27371_0_5.61656";
+  //TString pname = "A_AntNum_0_pos_8.27371_0_5.61656";
+  TString pname = "A_AntNum_0_pos_6_0_4.04";
   
   // Get profile
   TH1D* A = ((TProfile*) file->Get(pname.Data()))->ProjectionX("single");
+  A->Scale(m_scale);
 
   // Make canvas
   TCanvas* c = makeCanvas("c");
@@ -73,13 +80,15 @@ void plotMultiple(TString infile)
   TCanvas* c = makeCanvas("c");
 
   // Specify the antenna position
-  TString antPos = "A_AntNum_0_pos_8.27371_0_5.61656";
+  //TString antPos = "A_AntNum_0_pos_8.27371_0_5.61656";
+  TString antPos = "A_AntNum_0_pos_6_0_4.04";
 
   // Open input file
   TFile* file = new TFile(infile.Data());
 
   // Load the vector potential
-  TH1D* A = makeSumVPot(file, 5, antPos, 0.350); 
+  TH1D* A = makeSumVPot(file, 57, antPos, 0.350); 
+  A->Scale(m_scale);
 
   // Now get the E-field
   TGraph* E = getEField(A);

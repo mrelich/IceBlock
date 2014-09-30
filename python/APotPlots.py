@@ -18,7 +18,7 @@ rootfiledir = "efieldroot/"
 #---------------------------------------------#
 
 nbins = 2000
-tStep = 0.01 # ns
+tStep = 0.015 # ns
 
 #---------------------------------------------#
 # Specify input variables necessary here
@@ -138,7 +138,7 @@ for line in infile:
     # Now handle the per event level results
     if len(prof_VPot_perEvent[currentEvent]) <= curAnt:
         VPEvtName = "A_" + curAntName + "_Event" + str(currentEvent)
-        print "Making: ", VPEvtName
+        #print "Making: ", VPEvtName
         prof_VPot_perEvent[currentEvent].append( makeProfile(VPEvtName,nbins,t,
                                                              t+nbins*tStep,
                                                              kBlue,

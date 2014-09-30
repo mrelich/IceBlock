@@ -22,8 +22,8 @@ SetupAntenna::SetupAntenna(std::string infile)
   // Trying to match some ZHS results. 
   // So put the antenna at R = 100m and
   // for several angles.
-  //G4double R = 1000;
-  G4double R = 10;
+  G4double R = 1000;
+  //G4double R = 10;
 
   // Angles
   std::vector<G4double> angles;
@@ -44,6 +44,7 @@ SetupAntenna::SetupAntenna(std::string infile)
   angles.push_back(55.7);
   angles.push_back(55.8);
   */
+
   for(unsigned int i=0; i<angles.size(); ++i){
     G4double angle = angles.at(i) * 3.14159265358979312/180.;
 
@@ -66,6 +67,15 @@ SetupAntenna::SetupAntenna(std::string infile)
 				2000,
 				0.01) ); 
   */
+
+  // Testing old configuration
+  //G4double x = 6;
+  //G4double z = 4.04;
+  //G4double R = sqrt(x*x+z*z);
+  //m_ants.push_back( new Antenna(x,0,z,
+  //R*sf-10,
+  //				2000,
+  //				0.01) );
 
 }
 

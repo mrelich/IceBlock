@@ -1,6 +1,20 @@
+2014-09-30 Matt:
+	* Changed antenna position for default to 1km for comparison with ZHS.
+	* Checked agreement between ZHS and G4 for 40 MeV after bug fixes.
+	* Added all plots to output root file from APotPlots.py
+	* updated EField script to check scaling results. Everything seems consistent
+	* Updated VPCompareZHS to include latest ZHS comparison files.
+	* Updated iceblock from R10m to R1000m following update in antenna position
+	* TODO: Add antennta default distance as a parameter
+	* Adding makeRefractionScan.py -- This is still work in progress.
+		- Right now for angles near critical angle, z increases when it should continue
+		decreasing. I think it has to do with the sign ambiguity. Try to impose some
+		requirements.
+
 2014-09-29 Matt:
 	* Updating some minor changes after figuring out difference with ZHS.
 	* Committing verified version with velocity correction in place.
+	* Committing E-field drawing script.  Need to add more modularity for future
 
 2014-09-09 Matt:
 	* Committing debugged vector potential calculation. Right now two ways to calculate the velocity.

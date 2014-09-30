@@ -9,8 +9,8 @@
 // Scale factor is needed.  Since ZHS gives R*A, and G4 gives 
 // just A, we need to scale by the distance to antenna.  So
 // in this case it is 100m
-//double m_R = 1000; //100.;
-double m_R = 100.; //100.;
+double m_R = 1000; //100.;
+//double m_R = 100.; //100.;
 //double m_R = 400.;
 //double m_R = 1000.;
 
@@ -27,8 +27,8 @@ void VPCompareZHS(int opt = -1, bool save = false)
   m_save = save;
 
   // Specify ZHS and G4 files
-  //TString zhsdir = "../ZHS_ELSEnergy/rootfiles/";
-  TString zhsdir = "../ZHS_AngularScan/rootfiles/";
+  TString zhsdir = "../ZHS_ELSEnergy/rootfiles/";
+  //TString zhsdir = "../ZHS_AngularScan/rootfiles/";
   vector<TString> f_zhs;
   TString g4dir = "efieldroot/";
   vector<TString> f_g4;
@@ -53,12 +53,9 @@ void VPCompareZHS(int opt = -1, bool save = false)
   }
   else if(opt ==2 ){
     // 40 MeV Shower -- 1 primary
-    //f_zhs.push_back(zhsdir+"beam40MeV_100Prim_100NEvt_Angular.root");
-    //f_g4.push_back(g4dir+"Output_100Evt_40MeV_100Prim_HardCoded.root");
-    //savenames.push_back("VP_100Evt_40GeV_1Prim");
-    //f_g4.push_back(g4dir+"Output_20Evt_40MeV_100Prim_HardCodedAntenna_R100m.root");
-    //f_g4.push_back(g4dir+"Output_50Evt_40MeV_100Prim_HardCodedAntenna_R1000m.root");
-    //savenames.push_back("VP_100Evt_40GeV_1Prim");
+    f_zhs.push_back(zhsdir+"beam40MeV_100Prim_100NEvt_Angular.root");
+    f_g4.push_back(g4dir+"Output_100Evt_40MeV_100Prim_HardCodedAntenna_R1000m.root");
+    savenames.push_back("VP_100Evt_40GeV_100Prim");
   }  
   else if(opt == 3){
     plotPeakComp();
@@ -324,7 +321,8 @@ void plotWithRatio(vector<TString> f_zhs,
     
     if(m_save){
       //TString save = m_savedir + p_g4 + "_ZHSCherAngle.png";
-      TString save = m_savedir + savenames.at(i) + "_ratio.png";
+      //TString save = m_savedir + savenames.at(i) + "_ratio.png";
+      TString save = m_savedir + savenames.at(i) + "_ratio_fixed.png";
       c->SaveAs(save.Data());
     }
 
