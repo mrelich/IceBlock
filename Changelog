@@ -1,3 +1,9 @@
+2014-10-01 Matt:
+	* Including corrected makeRefractedScan.py (forgot previously). Finished now
+	* Updating Antenna.{cc,hh} to store angle information
+	* Updating SetupAntenna to handle angle information
+	* Updating EventAction to write the angle information to txt file
+
 2014-09-30 Matt:
 	* Changed antenna position for default to 1km for comparison with ZHS.
 	* Checked agreement between ZHS and G4 for 40 MeV after bug fixes.

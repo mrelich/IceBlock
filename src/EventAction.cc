@@ -73,7 +73,9 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     (*m_VPotOut) << "Antenna: "<<i<<" Pos: "
 		 <<ant->getX()<<" "
 		 <<ant->getY()<<" "
-		 <<ant->getZ()<<G4endl;
+		 <<ant->getZ()<<" "
+		 <<ant->getAngle()<<" "
+		 <<ant->getRefAngle()<<G4endl;
 
     
     // Now save the data points

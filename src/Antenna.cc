@@ -6,15 +6,19 @@
 //--------------------------------------------------//
 Antenna::Antenna(G4double x, G4double y, G4double z,
 		 G4double tStart, G4int nPoints,
-		 G4double stepSize)
+		 G4double stepSize,
+		 G4double angle, G4double refAngle)
 {
 
   m_x = x;
   m_y = y;
   m_z = z;
 
-  m_tStart = tStart;
-  m_nPoints = nPoints;
+  m_angle    = angle;
+  m_refAngle = refAngle;
+
+  m_tStart   = tStart;
+  m_nPoints  = nPoints;
   m_stepSize = stepSize;
 
   // Initialize the vector potential vectors

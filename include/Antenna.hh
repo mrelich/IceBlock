@@ -12,7 +12,9 @@ class Antenna
   Antenna(G4double x, G4double y, G4double z,  // Antenna location
 	  G4double tStart,                     // Start time for data taking
 	  G4int nPoints,                       // Number of points to store
-	  G4double stepSize);                  // Step size (bin width)
+	  G4double stepSize,                   // Step size (bin width)
+	  G4double angle,                      // Angle w/respect to beam direction
+	  G4double refAngle);                  // Refracted Angle assuming some tilt in ice
 
   // Destructor
   ~Antenna();
@@ -22,6 +24,9 @@ class Antenna
   G4double getX(){ return m_x; };
   G4double getY(){ return m_y; };
   G4double getZ(){ return m_z; };
+  G4double getAngle(){ return m_angle; };
+  G4double getRefAngle(){ return m_refAngle; };
+  
 
   // Method to calculate
   G4double getR(G4double x0, G4double y0, G4double z0);
@@ -56,6 +61,9 @@ class Antenna
   G4double m_y;            // Y position
   G4double m_z;            // Z position
   
+  G4double m_angle;        // angle with respect to beam
+  G4double m_refAngle;     // Angle refracted assuming some tilt in ice
+
   G4double m_tStart;       // Start time for data taking
   G4int    m_nPoints;      // Number of points to consider
   G4double m_stepSize;     // Resolution for detector
