@@ -239,5 +239,6 @@ void setAtt(TGraph* &gr, TString xtitle, TString ytitle, int color)
   gr->SetLineColor(color);
   gr->SetMarkerColor(color);
   gr->SetTitle("");
+  gr->SetLineWidth(2);
 
 }

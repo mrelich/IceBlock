@@ -7,7 +7,8 @@
 Antenna::Antenna(G4double x, G4double y, G4double z,
 		 G4double tStart, G4int nPoints,
 		 G4double stepSize,
-		 G4double angle, G4double refAngle)
+		 G4double angle, G4double refAngle,
+		 G4double zprime)
 {
 
   m_x = x;
@@ -16,6 +17,8 @@ Antenna::Antenna(G4double x, G4double y, G4double z,
 
   m_angle    = angle;
   m_refAngle = refAngle;
+
+  m_zprime = zprime;
 
   m_tStart   = tStart;
   m_nPoints  = nPoints;

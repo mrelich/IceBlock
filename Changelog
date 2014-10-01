@@ -3,6 +3,9 @@
 	* Updating Antenna.{cc,hh} to store angle information
 	* Updating SetupAntenna to handle angle information
 	* Updating EventAction to write the angle information to txt file
+	* Updating refractive scane and everything mentioned above to handle calculation of the
+		refracted electric field. Previous method was incorrect approach.
+	* Updating EField calculation for the comparison refracted with unrefracted
 
 2014-09-30 Matt:
 	* Changed antenna position for default to 1km for comparison with ZHS.

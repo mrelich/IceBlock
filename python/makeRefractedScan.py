@@ -104,16 +104,16 @@ while incident*180/pi < criticalAng:
     phi = getPhi(theta,rotAngle,refAng)
     R = xpos / sin(theta)
     z = xpos / tan(theta)
-    #print R, z, xpos
     Rprime = getRprime(z,R,xpos, phi)
     zprime = sqrt(Rprime*Rprime - xpos*xpos)
+    
     if prevZ - zprime < 0: 
         prevZ = zprime
         zprime = -zprime
     else:
         prevZ = zprime
 
-    print theta * 180/pi, refAng*180/pi, z, zprime
+    print theta * 180/pi, refAng*180/pi, Rprime/R
     
     # Write x
     outfile.write(str(xpos)+"\t")
@@ -122,12 +122,12 @@ while incident*180/pi < criticalAng:
     outfile.write(str(ypos)+"\t")
     
     # Write z
-    outfile.write(str(zprime)+"\t")
-    #outfile.write(str(z)+"\t")
+    outfile.write(str(z)+"\t")
         
     # Write angles
     outfile.write(str(theta*180/pi)+"\t")
-    outfile.write(str(refAng*180/pi)+"\n")
+    outfile.write(str(refAng*180/pi)+"\t")
+    outfile.write(str(zprime)+"\n")
     
 
     # Increment angle

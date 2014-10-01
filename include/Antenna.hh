@@ -14,8 +14,8 @@ class Antenna
 	  G4int nPoints,                       // Number of points to store
 	  G4double stepSize,                   // Step size (bin width)
 	  G4double angle,                      // Angle w/respect to beam direction
-	  G4double refAngle);                  // Refracted Angle assuming some tilt in ice
-
+	  G4double refAngle,                   // Refracted Angle assuming some tilt in ice
+	  G4double zprime);                     // Primed z coordinate
   // Destructor
   ~Antenna();
 
@@ -26,7 +26,7 @@ class Antenna
   G4double getZ(){ return m_z; };
   G4double getAngle(){ return m_angle; };
   G4double getRefAngle(){ return m_refAngle; };
-  
+  G4double getZprime(){ return m_zprime; };
 
   // Method to calculate
   G4double getR(G4double x0, G4double y0, G4double z0);
@@ -63,6 +63,8 @@ class Antenna
   
   G4double m_angle;        // angle with respect to beam
   G4double m_refAngle;     // Angle refracted assuming some tilt in ice
+
+  G4double m_zprime;       // Coordinate in refracted system. x is fixed.
 
   G4double m_tStart;       // Start time for data taking
   G4int    m_nPoints;      // Number of points to consider

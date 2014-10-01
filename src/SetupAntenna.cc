@@ -55,7 +55,7 @@ SetupAntenna::SetupAntenna(std::string infile)
 				  R * sf - 10,
 				  2000,
 				  0.01,
-				  0,0) );
+				  0,0,0));
   }// end loop over angles
 
   /*
@@ -117,8 +117,9 @@ void SetupAntenna::readAntennaFromFile(std::string infile)
   G4double x = 0;
   G4double y = 0;
   G4double z = 0;
-  G4double angle = 0;
+  G4double angle    = 0;
   G4double refAngle = 0;
+  G4double zprime   = 0;
 
   // hack to not double count last line
   G4double prevX = 0;
@@ -126,7 +127,7 @@ void SetupAntenna::readAntennaFromFile(std::string infile)
   G4double prevZ = 0;
   while( input.good() ){
 
-    input >> x >> y >> z >> angle >> refAngle;
+    input >> x >> y >> z >> angle >> refAngle >> zprime;
     
     // Not the best way (comparing doubles) but
     // try this for now...
@@ -135,16 +136,18 @@ void SetupAntenna::readAntennaFromFile(std::string infile)
     prevY = y;
     prevZ = z;
 
+    // Don't need to calculate anymore. Stored in file
     G4double R = sqrt(x*x+y*y+z*z);
 
     G4cout<<"Setting antenna: "<<x<<" "<<y<<" "<<z<<" "<<R
-	  <<" "<<angle<<" "<<refAngle<<G4endl;
+	  <<" "<<angle<<" "<<refAngle<<" "<<zprime<<G4endl;
     m_ants.push_back( new Antenna(x,y,z,
                                   R * sf - 10,
                                   np,
                                   stepSize,
 				  angle,
-				  refAngle) );
+				  refAngle,
+				  zprime) );
 
   }
     

@@ -75,7 +75,8 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 		 <<ant->getY()<<" "
 		 <<ant->getZ()<<" "
 		 <<ant->getAngle()<<" "
-		 <<ant->getRefAngle()<<G4endl;
+		 <<ant->getRefAngle()<<" "
+		 <<ant->getZprime()<<G4endl;
 
     
     // Now save the data points
