@@ -158,7 +158,8 @@ int main(int argc, char** argv)
     ss << "_" << s_ant;
   }
   else{
-    ss << "_HardCodedAntenna_R1000m";
+    //ss << "_HardCodedAntenna_R1000m";
+    ss << "_HardCodedAntenna_R7m";
     //ss << "_HardCodedAntenna_R1000m_oldV";
     //ss << "_HardCodedAntenna_R100m_newV";
     //ss << "_HardCodedAntenna_BetaCalc";

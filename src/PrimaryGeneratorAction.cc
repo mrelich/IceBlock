@@ -76,7 +76,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4double x_rand = 0.0;
     G4double y_rand = 0.0;
     //for(G4int i=0; i<m_nParticles; ++i){
-    for(G4int i=0; i<100000; ++i){
+    for(G4int i=0; i<m_nParticles; ++i){
       x_rand = G4RandGauss::shoot(0,m_sigma);
       y_rand = G4RandGauss::shoot(0,m_sigma);
       particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
@@ -93,7 +93,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4double y_rand  = 0;
     G4double x_sign  = 1;
     G4double y_sign  = 1;
-    for(G4int i=0; i<100000; ++i){
+    for(G4int i=0; i<m_nParticles; ++i){
       
       x_rand = 999;
       y_rand = 999;
