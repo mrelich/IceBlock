@@ -19,6 +19,7 @@ rootfiledir = "efieldroot/"
 
 nbins = 2000
 tStep = 0.015 # ns
+#tStep = 0.02 # ns
 
 #---------------------------------------------#
 # Specify input variables necessary here

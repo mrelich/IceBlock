@@ -5,6 +5,8 @@
 // later be extedned to handle the multipulse case.              //
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
 
+// TODO: Clean up plotMaxEVsZ and make sure plotRefractedCompare still works
+
 #include "myHist.C"
 
 // Need to specify some scaling factors depending
@@ -13,7 +15,8 @@ double m_scale  = 1;  // scaling factor for
 
 // Save information
 bool m_save = false;
-TString m_savedir = "plots/EField/RefractedEField/";
+//TString m_savedir = "plots/EField/RefractedEField/";
+TString m_savedir = "plots/EField/RefractedEField_BinningCheck/";
 
 //-------------------------------------------------//
 // Main
@@ -51,6 +54,14 @@ void EField(int opt = 0, bool save=false)
     // delay which corresponds to n*(R-Rprime)/c (in seconds)
     plotRefractedCompare(true);
   }
+
+  // Plot |E| vs z position
+  if(opt == 3)
+    plotMaxEVsZ();
+  
+  // Investigate vector potential 
+  if(opt == 4)
+    plotVPComp();
 
 }
 
@@ -170,7 +181,8 @@ void plotRefractedCompare(bool doSingle)
   // Specify the root files that corespond to the 
   // two input files above
   TString indir = "efieldroot/";
-  TFile* f_nom = new TFile((indir+"Output_5Evt_40MeV_10000Prim_xzRefracted_40MeV.root").Data());
+  //TFile* f_nom = new TFile((indir+"Output_5Evt_40MeV_10000Prim_xzRefracted_40MeV.root").Data());
+  TFile* f_nom = new TFile((indir+"Output_50Evt_40MeV_10000Prim_xzRefracted_40MeV_BinningCheck.root").Data());
 
   // Make canvas
   TCanvas* c = makeCanvas("c");
@@ -186,19 +198,29 @@ void plotRefractedCompare(bool doSingle)
   // Loop over files and get the antenna positions
   int counter = 0;
   TString antPos   = "";
-  TString angle    = "";
-  TString refAngle = "";
+  double angle     = 0;
+  double refAngle  = 0;
   double  R        = 0;
   double  Rprime   = 0;
+  double  x=0, y=0, z=0;
+  double zprime = 0;
+  double prevZ = 0;
 
-  while( !m_nom.eof() && counter < 26){
+  while( !m_nom.eof() ){
+  //while( !m_nom.eof() && counter < 1){
     
-    getAntPos(m_nom, counter, antPos, angle, refAngle, R, Rprime);
+    getAntPos(m_nom, counter, antPos, 
+	      angle, refAngle, 
+	      x,y,z,
+	      R, Rprime,
+	      zprime);
     counter++;
 
     // Protect against last step going 
     // beyond the end of file
-    if(angle == "0" && refAngle == "0") continue;
+    if( z == prevZ ) continue;
+    prevZ = z;
+
 
     cout<<antPos<<" "<<angle<<" "<<refAngle<<" "
 	<<R<<" "<<Rprime<<endl;
@@ -206,7 +228,6 @@ void plotRefractedCompare(bool doSingle)
     // So now I have the antenna names from the file
     // we can plot single or multiple plots. Go with 
     // single first
-
     TH1D* A_nom = NULL;
     TH1D* A_ref = NULL;
     if(doSingle)
@@ -240,9 +261,7 @@ void plotRefractedCompare(bool doSingle)
 
     // Add legend info
     leg->Clear();
-    leg->SetHeader(("Angle: " + angle + "#circ").Data());
-    //leg->AddEntry(gr_nom, ("Nominal: "+angle+"#circ").Data(),"l");
-    //leg->AddEntry(gr_ref, ("Refracted: "+refAngle+"#circ").Data(), "l");
+    leg->SetHeader(Form("Angle: %.0f#circ",angle));
     leg->AddEntry(gr_nom, "Nominal","l");
     leg->AddEntry(gr_ref, "Refracted", "l");
     leg->Draw("same");
@@ -269,32 +288,158 @@ void plotRefractedCompare(bool doSingle)
 }
 
 //-------------------------------------------------//
+// Plot E-field comparing nominal vs. refracted ang
+//-------------------------------------------------//
+void plotMaxEVsZ()
+{
+
+  // Specify the antenna files to consider
+  // Important: It is assumed file lengths are the 
+  // same, so there is a one-to-one coreespondence
+  ifstream m_nom ("antennaConfig/xzRefracted_40MeV.txt");
+
+  // Specify the root files that corespond to the 
+  // two input files above
+  TString indir = "efieldroot/";
+  //TFile* f_nom = new TFile((indir+"Output_5Evt_40MeV_10000Prim_xzRefracted_40MeV.root").Data());
+  //TFile* f_nom = new TFile((indir+"Output_50Evt_40MeV_10000Prim_xzRefracted_40MeV.root").Data());
+  TFile* f_nom = new TFile((indir+"Output_50Evt_40MeV_10000Prim_xzRefracted_40MeV_BinningCheck.root").Data());
+
+  // Make canvas
+  TCanvas* c = makeCanvas("c");
+  
+  // Make Legend
+  TLegend* leg = makeLegend(0.17,0.33,0.75,0.93);
+
+  // Graph labels and stuff
+  TString legTitle = "Ice Tilt = 30#circ";
+  TString xtitle = "Angle Relative to Beam [deg]";
+  TString ytitle = "Maximum |E| [Vm]";
+  int colors[] = {kBlue,kRed};
+
+  // Holders for graph
+  int counter = 0;
+  double Z[1000];
+  double Zprime[1000];
+  double maxE[1000];
+    
+  // Holders
+  TString antPos   = "";
+  double angle    = 0;
+  double refAngle = 0;
+  double x=0,y=0,z=0;
+  double R=0, Rprime = 0;
+  double zprime = 0;
+  double prevZ  = 0;
+  int npoints = 0;
+
+  // Loop over files and get the antenna positions
+  while( !m_nom.eof() ){
+    
+    getAntPos(m_nom, counter, antPos, angle, refAngle, 
+	      x,y,z,
+	      R, Rprime,
+	      zprime);
+    counter++;
+    cout<<"Working on : "<<counter-1<<" "<<antPos<<endl;
+
+    // Protect against last step going 
+    // beyond the end of file
+    if( z == prevZ ) continue;
+    prevZ = z;
+
+    // Get Vector potential
+    TH1D* A = ((TProfile*) f_nom->Get(antPos.Data()))->ProjectionX("singleNom");
+
+    // Scale
+    A->Scale(m_scale * R/Rprime);
+    
+    // Get the refracted result with timing offset
+    double dt = 1.78 * (Rprime - R)/ 2.99792458e8 / 1e-9;
+    TGraph* gr_E = getEField(A, dt);
+
+    // Now get the maximum E field
+    int np = gr_E->GetN();
+    double t =0, E=0;
+    double absE = -999;
+    for(int ip=0; ip<np; ++ip){
+      gr_E->GetPoint(ip,t,E);
+      if( fabs(E) > absE ) absE = fabs(E);
+    }
+
+    // Don't need to count the z points
+    
+
+    // Now store results
+    double conv = 180/TMath::Pi();
+
+    if( atan(x/zprime) < 0 ) continue;
+    Z[npoints]      = atan(x/z)*conv; ////z;
+    Zprime[npoints] = atan(x/zprime)*conv; //zprime;
+    maxE[npoints]   = absE;
+    npoints++;
+
+    // Delete objects
+    delete A;
+    delete gr_E;
+    
+
+  }// end loop over file
+  
+  // Make graphs
+  TGraph* gr_nom = new TGraph(npoints, Z, maxE);
+  setAtt(gr_nom,xtitle,ytitle,colors[0]);
+  TGraph* gr_ref = new TGraph(npoints, Zprime, maxE);
+  setAtt(gr_ref,xtitle,ytitle,colors[1]);
+
+  // Make a frame histogram
+  TH1F* frame = makeFrame(gr_nom, gr_ref);
+  
+  // Draw
+  frame->Draw();
+  gr_nom->Draw("same");
+  gr_ref->Draw("same");
+
+  // Add legend info
+  leg->Clear();
+  leg->SetHeader("Ice Tilt = 30#circ");
+  leg->AddEntry(gr_nom, "Nominal","l");
+  leg->AddEntry(gr_ref, "Refracted", "l");
+  leg->Draw("same");
+    
+  // Need to delete the histograms and graphs to avoid 
+  // the memory leaks.  Only clean up for case where we
+  // save the plots to png.
+  if( m_save ){
+    TString savename = m_savedir + "EFieldVsZ.png";
+    c->SaveAs(savename.Data());
+
+  }// end if save
+  
+  
+}
+
+//-------------------------------------------------//
 // Get antenna position for a given fil
 //-------------------------------------------------//
-void getAntPos(ifstream &infile, int &counter, 
-	       TString &antPos, TString &angle, 
-	       TString &refAngle, double &R, 
-	       double &Rprime)  
+void getAntPos(ifstream &infile, 
+	       int &counter,
+	       TString &antPos,
+	       double &angle, double &refAngle,
+	       double &x, double &y, double &z,
+	       double &R, double &Rprime, double &zprime)
 {
   
   // Specify variables to read in the lines in the pos
-  double x=0, y=0, z=0, zprime=0;
-  double ang = 0, refAng = 0;
-  
-  infile >> x >> y >> z >> ang >> refAng >> zprime;
-  
+  infile >> x >> y >> z >> angle >> refAngle >> zprime;
+  //cout<<"\t"<<x<<" "<<y<<" "<<z<<endl;
+
   // make the strings
   stringstream ss;
   ss << "A_AntNum_" << counter << "_pos_"
      << x << "_" << y << "_" << z;
   antPos = TString(ss.str().c_str());
   
-  // Set angle and refAngle
-  ss.str(""); ss << ang;
-  angle = TString(ss.str().c_str());
-  ss.str(""); ss << Form("%.2f",refAng);
-  refAngle = TString(ss.str().c_str());
-
   // Save R and Rprime
   R      = sqrt(x*x+y*y+z*z);
   Rprime = sqrt(x*x+y*y+zprime*zprime);
@@ -395,5 +540,76 @@ TH1F* makeFrame(TGraph* gr1, TGraph* gr2)
   h->SetMaximum(1.1*ymax);
   
   return h;
+
+}
+
+//-------------------------------------------------//
+// Vector potential comparison for studies
+void plotVPComp()
+{
+
+  // Specify the input file
+  //TFile* file = new TFile("efieldroot/Output_50Evt_40MeV_10000Prim_xzRefracted_40MeV.root");
+  TFile* file = new TFile("efieldroot/Output_50Evt_40MeV_10000Prim_xzRefracted_40MeV_BinningCheck.root");
+
+  // Currently plot at the Cherenkov Angle
+  vector<TString> pnames;
+  pnames.push_back("A_AntNum_27_pos_6_0_3.89645");
+  pnames.push_back("A_AntNum_28_pos_6_0_3.74922");
+  pnames.push_back("A_AntNum_29_pos_6_0_3.60516");
+  
+  // Names for legend
+  vector<TString> names;
+  names.push_back("57#circ");
+  names.push_back("58#circ");
+  names.push_back("59#circ");
+
+  // Make canvas
+  TCanvas* c = makeCanvas("c");
+  c->SetLogy();
+
+  // Make legend
+  TLegend* leg = makeLegend(0.15,0.3,0.75,0.93);
+
+  // Titles and shiz for hists
+  TString xtitle = "t [ns]";
+  TString ytitle = "|A| [Vs/m]";
+  int color[] = {kBlack, kRed, kBlue,kMagenta};
+
+  // Loop and get the profile
+  TProfile* profs[3];
+  float maximum = -99999;
+  for(unsigned int i=0; i<pnames.size(); ++i){
+    TString pname = pnames.at(i);
+    TString name  = names.at(i);
+
+    profs[i] = getProfile(file,pname,xtitle,ytitle,color[i],20);
+    leg->AddEntry(profs[i], name.Data(), "le");
+
+    if(maximum < profs[i]->GetMaximum())
+      maximum = profs[i]->GetMaximum();
+
+  }
+
+  // Set max
+  profs[0]->SetMaximum(5*maximum);
+  profs[0]->SetMinimum(1e-3*maximum);
+
+  // Set min and max for x range
+  float xmin = 41; float xmax = 44;
+  float xminB = profs[0]->GetXaxis()->FindBin(xmin);
+  float xmaxB = profs[0]->GetXaxis()->FindBin(xmax);
+  profs[0]->GetXaxis()->SetRange(xminB,xmaxB);
+
+  // Draw
+  profs[0]->Draw();
+  for(unsigned int i=1; i<pnames.size(); ++i)
+    profs[i]->Draw("same");
+  
+  leg->Draw("same");
+
+  // Save
+  if( m_save )
+    c->SaveAs((m_savedir+"VPCheckForSpikes_LargerBins.png").Data());
 
 }
