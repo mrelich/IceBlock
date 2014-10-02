@@ -33,7 +33,7 @@ void help()
 
   cout << endl;
   cout << endl;
-  cout << "-------------------------------------------" << endl;
+  cout << "------------------------------------------------------------" << endl;
   cout << "-ne <int> " << endl;
   cout << "\t Specify the number of events " << endl;
   cout << "\t default is 1" << endl;
@@ -62,7 +62,11 @@ void help()
   cout << "-i <file.txt> " << endl;
   cout << "\t Defaule is NULL" << endl;
   cout << "\t\tSpecify input file to read antenna config from"<<endl;
-  cout << "-------------------------------------------" << endl;
+  cout << "--flat <float>" << endl;
+  cout << "\t Inject random flat distribution with width <float> [mm]" << endl;
+  cout << "--gauss <float>" << endl;
+  cout << "\t Inject Gaussian distribution with <float> sigma [mm]" << endl;
+  cout << "------------------------------------------------------------" << endl;
   cout << endl;
   cout << endl;
 
@@ -86,6 +90,9 @@ int main(int argc, char** argv)
   G4double threshold     = 0;
   bool useThreshold      = false;
   std::string antFile    = "";
+  G4bool b_flat            = false;
+  G4bool b_gauss           = false; 
+  G4double sigma         = 0;
 
   // Options
   for(int i=1; i<argc; ++i){
@@ -105,6 +112,14 @@ int main(int argc, char** argv)
     }
     else if( strcmp(argv[i], "-i") == 0 )
       antFile = argv[++i];
+    else if( strcmp(argv[i], "--flat") == 0 ){
+      b_flat = true;
+      sigma = atof( argv[++i] );
+    }
+    else if( strcmp(argv[i], "--gauss") == 0 ){
+      b_gauss = true;
+      sigma = atof( argv[++i] );
+    }
     else{
       help();
       return 0;
@@ -150,6 +165,11 @@ int main(int argc, char** argv)
     //ss << "_HardCodedAntenna_R10m";
   }
 
+  // Add some more info about input distribution
+  if(b_flat) ss << "_RandFlat" << sigma;
+  else if(b_gauss) ss << "_RandGauss" << sigma;
+  else ss << "_singlePos";
+
   // If threshold is set, append to file
   if(useThreshold) ss << "_thresh" << threshold << "MeV";
 
@@ -189,7 +209,8 @@ int main(int argc, char** argv)
   PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(detector,
 								 beamEnergy,
 								 partType,
-								 nParticles);  
+								 nParticles,
+								 b_flat, b_gauss, sigma);  
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
   runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput,
@@ -220,7 +241,7 @@ int main(int argc, char** argv)
     
 
   delete runManager;
-  cout<<"Number of particles"<<nParticles<<endl;
+  cout<<"Number of particles "<<nParticles<<endl;
   cout<<"Runtime is: "<<(double)(clock() - tStart)/CLOCKS_PER_SEC<<" seconds "<<endl;
 
   delete m_AntSetup;

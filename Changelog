@@ -1,6 +1,10 @@
 2014-10-02 Matt:
 	* Updating EField and APotPlots. Latest investigations have been added.
 	* Tagging Version 00.04
+	* Added options --flat <float> and --gauss <float> such that beam profile can be set
+	* Adding short script to plot beam profile from output: PlotBeamProfile
+		This script needs output from PrimaryGeneratorAction. Search f_test.
+	* Adding some methods to myHist.C
 
 2014-10-01 Matt:
 	* Including corrected makeRefractedScan.py (forgot previously). Finished now

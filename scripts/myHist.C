@@ -1,5 +1,6 @@
 
 #include "TH1.h"
+#include "TH2.h"
 #include "TProfile.h"
 #include "TCanvas.h"
 #include "TLegend.h"
@@ -39,6 +40,37 @@ void setHistAtt(TH1F* &h, TString xtitle, TString ytitle,
   h->GetYaxis()->SetTitleOffset(1.5);
 
 }
+
+//------------------------------------------------------------//
+// Make TH2F
+//------------------------------------------------------------//
+TH2F* makeHist2(TString name, int nbinsx, float xmin, float xmax,
+	       int nbinsy, float ymin, float ymax, 
+	       TString xtitle, TString ytitle, TString ztitle)
+{
+
+  TH2F* h = new TH2F(name.Data(),name.Data(),nbinsx,xmin,xmax,
+		     nbinsy,ymin,ymax);
+  setAtt(h,xtitle,ytitle,ztitle);
+  return h;
+
+}
+
+//------------------------------------------------------------//
+// Set TH2F properties
+//------------------------------------------------------------//
+void setAtt(TH2F* &h, TString xtitle, 
+	    TString ytitle, TString ztitle)
+{
+
+  h->GetXaxis()->SetTitle(xtitle.Data());
+  h->GetYaxis()->SetTitle(ytitle.Data());
+  h->GetZaxis()->SetTitle(ztitle.Data());
+  h->SetStats(0);
+  h->SetTitle("");
+  h->GetYaxis()->SetTitleOffset(1.5);
+  
+}	    
 
 
 //------------------------------------------------------------//
