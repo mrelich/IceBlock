@@ -69,7 +69,12 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
 
+  // We now have several ways to place the particle's vertex.
+  // Implemented below are random gaussian distribution, random
+  // flat distribution with some width, and the original way,
+  // which is to place them all at (0,0,0).
 
+  // Gaussian
   if( m_gauss ){
     
     // Setup random Gaussian with some seed.
@@ -86,6 +91,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   }// end if gauss
 
+  // Flat distribution
   else if( m_flat ){
 
     // Get uniform random number
@@ -116,12 +122,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
     }// end loop over # particles
 
-
-  }
-
+  }// end if flat distribution
+  
+  // Nominal: all at (0,0,0)
   else{
 
-    // For nominal testing, just put them all at 0,0,0:
     G4ThreeVector startPos = G4ThreeVector(0*mm,0*mm,0*mm);
     for(G4int i=0; i<m_nParticles; ++i){
       particleGun->SetParticlePosition(startPos);
