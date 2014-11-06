@@ -74,7 +74,7 @@ void PhysicsList::ConstructParticle()
   G4MesonConstructor mConstructor;
   mConstructor.ConstructParticle();
 
-  // barions
+  // baryons
   G4BaryonConstructor bConstructor;
   bConstructor.ConstructParticle();
 
@@ -159,7 +159,7 @@ void PhysicsList::ConstructHadrons()
 void PhysicsList::ConstructProcess()
 {
   
-  // Make sure to have transportation : )
+  // Make sure to have transportation
   AddTransportation();
 
   // Turn on processes here.  Right now ONLY considering
@@ -174,6 +174,11 @@ void PhysicsList::ConstructProcess()
 
 }
 
+
+
+//-----------------------------------------------------------------//
+// Particle decay
+//-----------------------------------------------------------------//
 void PhysicsList::AddDecay()
 {
   // Add Decay Process

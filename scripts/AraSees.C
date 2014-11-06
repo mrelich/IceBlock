@@ -385,6 +385,8 @@ TH1F* remake(TH1F* hin, int nbins, float xmin, float xmax)
   float xmaxin = hin->GetXaxis()->GetXmax();
   int nbins = hin->GetNbinsX();
 
+  cout<<"Using Nbins: "<<nbins<<" min: "<<xmin<<" max: "<<xmax<<" diff: "<<1/(xmax-xmin)<<endl;
+
   TH1F* h = new TH1F("scaled","",nbins, xminin/(xmax-xmin), xmaxin/(xmax-xmin));
   for(int bin=1; bin<=nbins; ++bin){
     float bc = hin->GetBinContent(bin)/sqrt(nbins);

@@ -113,7 +113,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
   if( abs(track->GetParticleDefinition()->GetPDGEncoding()) != 11) return;
 
   // Placing a 1 MeV Energy threhold
-  //if( aStep->GetPostStepPoint()->GetTotalEnergy()/MeV < 10 /*0.511*/ ) return;
+  //if( aStep->GetPostStepPoint()->GetTotalEnergy()/MeV < 1 ) return;
 
   // Working in SI Units throughout in order to try to remove
   // any unit conversion errors.
@@ -212,12 +212,13 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     }
 
     // Don't count if out of bounds
+    // This seems a bit dodgy... RETURN
     if(iEnd < iFirstBin)  continue;
     if(iStart > iLastBin) continue;
-    //if(iEnd > iLastBin)    iEnd = iLastBin;
-    //if(iStart < iFirstBin) iStart = iFirstBin;
-    if(iEnd > iLastBin)    continue;
-    if(iStart < iFirstBin) continue;
+    if(iEnd > iLastBin)    iEnd = iLastBin;
+    if(iStart < iFirstBin) iStart = iFirstBin;
+    //if(iEnd > iLastBin)    continue;
+    //if(iStart < iFirstBin) continue;
 
     // Debug times
     //G4cout<<"\ttD0: "<<tD0<<" tD1: "<<" bins: "<<iStart<<" "<<iEnd

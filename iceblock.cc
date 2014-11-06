@@ -159,9 +159,9 @@ int main(int argc, char** argv)
   }
   else{
     //ss << "_HardCodedAntenna_R1000m";
-    ss << "_HardCodedAntenna_R7m";
+    //ss << "_HardCodedAntenna_R7m";
     //ss << "_HardCodedAntenna_R1000m_oldV";
-    //ss << "_HardCodedAntenna_R100m_newV";
+    ss << "_HardCodedAntenna_R100m";
     //ss << "_HardCodedAntenna_BetaCalc";
     //ss << "_HardCodedAntenna_R10m";
   }
@@ -171,8 +171,13 @@ int main(int argc, char** argv)
   else if(b_gauss) ss << "_RandGauss" << sigma;
   else ss << "_singlePos";
 
+  //ss << "_TestingEndpointIssue";
+  //ss << "_shortenedZ";
+
   // If threshold is set, append to file
   if(useThreshold) ss << "_thresh" << threshold << "MeV";
+
+  ss << "_debug";
 
   // Setup the Antennas
   SetupAntenna* m_AntSetup = new SetupAntenna(antFile);
@@ -200,6 +205,15 @@ int main(int argc, char** argv)
   std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream APotOut(("efield/A_"+ss.str()+".dat").c_str(), std::ofstream::out);
+
+  // Output some meta data info for the vector potential plots
+  APotOut << "# " << nEvents << " " 
+	  << nParticles << " "
+	  << beamEnergy << " "
+	  << m_Ants.size() << " "
+	  << m_Ants.at(0)->getNPoints() << " "
+	  << m_Ants.at(0)->getTStep()   
+	  << G4endl;
 
   // My output tree
   // This seems to take too long!!

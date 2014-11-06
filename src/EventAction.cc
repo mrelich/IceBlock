@@ -94,5 +94,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     }// end loop over points
 
   }
+  (*m_VPotOut)    << "End: " << evt->GetEventID() << G4endl;
+
   
 }

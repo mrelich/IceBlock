@@ -24,7 +24,8 @@ SetupAntenna::SetupAntenna(std::string infile)
   // for several angles.
   //G4double R = 1000;
   //G4double R = 10;
-  G4double R = 7;
+  //G4double R = 7;
+  G4double R = 100;
 
   // Angles
   std::vector<G4double> angles;
@@ -48,14 +49,14 @@ SetupAntenna::SetupAntenna(std::string infile)
 
   for(unsigned int i=0; i<angles.size(); ++i){
     G4double angle = angles.at(i) * 3.14159265358979312/180.;
-
+    
     // Initialize some antennas here
     m_ants.push_back( new Antenna(R*sin(angle),
 				  0,
 				  R*cos(angle),
-				  R * sf - 10,
+				  (int) (R * sf - 10),
 				  2000,
-				  0.01,
+				  0.02,
 				  0,0,0));
   }// end loop over angles
 
@@ -112,7 +113,7 @@ void SetupAntenna::readAntennaFromFile(std::string infile)
   // I will fix the number of points to 1000 
   // with 0.5 ns steps
   int np         = 2000;
-  G4double stepSize = 0.01; // ns
+  G4double stepSize = 0.02; // ns
   
   // Antenna positions
   G4double x = 0;
@@ -143,7 +144,7 @@ void SetupAntenna::readAntennaFromFile(std::string infile)
     G4cout<<"Setting antenna: "<<x<<" "<<y<<" "<<z<<" "<<R
 	  <<" "<<angle<<" "<<refAngle<<" "<<zprime<<G4endl;
     m_ants.push_back( new Antenna(x,y,z,
-                                  R * sf - 10,
+                                  (int) (R * sf - 10),
                                   np,
                                   stepSize,
 				  angle,

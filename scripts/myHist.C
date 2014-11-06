@@ -6,8 +6,25 @@
 #include "TLegend.h"
 #include "TString.h"
 #include "TFile.h"
+#include "TLine.h"
 
 #include <vector>
+
+//------------------------------------------------------------//
+// Make line
+//------------------------------------------------------------//
+TLine* makeLine(float x0, float x1, float y0, float y1, 
+                int color=kBlack, int style=1)
+{
+
+  TLine* line = new TLine(x0,y0,x1,y1);
+  line->SetLineWidth(1);
+  line->SetLineColor(color);
+  line->SetLineStyle(style);
+
+  return line;
+}
+
 
 //------------------------------------------------------------//
 // Make Histogram

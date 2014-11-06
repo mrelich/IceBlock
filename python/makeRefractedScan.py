@@ -13,7 +13,9 @@ from math import *
 # Output file name
 #-------------------------#
 
-outfile = open("antennaConfig/xzRefracted_40MeV.txt","w")
+#outfile = open("antennaConfig/xzRefracted_40MeV.txt","w")
+outfile = open("antennaConfig/temp_Rot30.txt","w")
+#outfile = open("antennaConfig/temp_Rot60.txt","w")
 #outfile = open("antennaConfig/xzUnRefracted_40MeV.txt","w")
 
 #-------------------------#
@@ -28,6 +30,7 @@ ypos = 0 # [m]
 #-------------------------#
 
 rotAngle = 30 * pi/180.
+#rotAngle = 60 * pi/180.
 
 #-------------------------#
 # Specify angular steps
@@ -38,6 +41,7 @@ n_air = 1.0
 
 criticalAng = asin(n_air/n_ice) * 180/pi # degrees
 angleStep   = 1                          # degrees
+#angleStep   = 0.5                          # degrees
 
 #-------------------------#
 # Define a few methods

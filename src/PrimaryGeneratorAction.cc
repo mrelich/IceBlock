@@ -127,7 +127,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Nominal: all at (0,0,0)
   else{
 
-    G4ThreeVector startPos = G4ThreeVector(0*mm,0*mm,0*mm);
+    G4ThreeVector startPos = G4ThreeVector(0.01*mm,0.1*mm,0*mm);
     for(G4int i=0; i<m_nParticles; ++i){
       particleGun->SetParticlePosition(startPos);
       particleGun->GeneratePrimaryVertex(anEvent);

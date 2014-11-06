@@ -1,3 +1,19 @@
+2014-11-06 Matt:
+	* There was an error in how I was handling the bins. I was putting things into a Profile,
+		which will average the result if multiple entries end up in one bin. However this
+		is not the way to do it. We are evaluating a function a specific steps in time,
+		therefore the binning must remain fixed.  It is too hard to do with scattered
+		root scripts, therefore I have written new analysis code.
+	* Updates to all scripts that were used in testing are now committed
+	* Tagging and then will introduce bunch structure to the beam.
+
+2014-10-17 Matt:
+	* Fixing time check in SteppingAction. Including everything in window.
+	* Moving beam slightly off-center for all particles in one position case
+	* Minor updates to python scripts.
+	* Adding miscellanous plotting scripts
+	* Tagging before testing some updates
+
 2014-10-02 Matt:
 	* Updating EField and APotPlots. Latest investigations have been added.
 	* Tagging Version 00.04
@@ -5,6 +21,8 @@
 	* Adding short script to plot beam profile from output: PlotBeamProfile
 		This script needs output from PrimaryGeneratorAction. Search f_test.
 	* Adding some methods to myHist.C
+	* Fixing PrimaryGeneratorAction. Wasn't looping over n_particles.
+	* Adding plotting script to compare the point source, flat, and gaussian particle guns.
 
 2014-10-01 Matt:
 	* Including corrected makeRefractedScan.py (forgot previously). Finished now

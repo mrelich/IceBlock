@@ -9,8 +9,8 @@
 // Scale factor is needed.  Since ZHS gives R*A, and G4 gives 
 // just A, we need to scale by the distance to antenna.  So
 // in this case it is 100m
-double m_R = 1000; //100.;
-//double m_R = 100.; //100.;
+//double m_R = 1000; //100.;
+double m_R = 100.; //100.;
 //double m_R = 400.;
 //double m_R = 1000.;
 
@@ -30,6 +30,7 @@ void VPCompareZHS(int opt = -1, bool save = false)
   TString zhsdir = "../ZHS_ELSEnergy/rootfiles/";
   //TString zhsdir = "../ZHS_AngularScan/rootfiles/";
   vector<TString> f_zhs;
+  //TString g4dir = "efieldroot/Save_Oct_2_2014/";
   TString g4dir = "efieldroot/";
   vector<TString> f_g4;
   vector<TString> savenames;
@@ -53,8 +54,8 @@ void VPCompareZHS(int opt = -1, bool save = false)
   }
   else if(opt ==2 ){
     // 40 MeV Shower -- 1 primary
-    f_zhs.push_back(zhsdir+"beam40MeV_100Prim_100NEvt_Angular.root");
-    f_g4.push_back(g4dir+"Output_100Evt_40MeV_100Prim_HardCodedAntenna_R1000m.root");
+    f_zhs.push_back(zhsdir+"beam40MeV_100Prim_50NEvt_AngScan_Angular.root");
+    f_g4.push_back(g4dir+"A_output_1000_40_ice_eBeam_np100_AngleScan_100m_singlePos_debug.root");
     savenames.push_back("VP_100Evt_40GeV_100Prim");
   }  
   else if(opt == 3){
@@ -124,17 +125,19 @@ void VPCompareZHS(int opt = -1, bool save = false)
   }
 
   // Specify the ZHS histogram name
-  TString p_zhsname = "VP_avg_55.829616";
+  //TString p_zhsname = "VP_avg_55.829616";
+  TString p_zhsname = "VP_avg_64.0";
   //TString p_g4name  = "A_AntNum_0_pos_82.7371_0_56.1656";
   //TString p_g4name  = "A_AntNum_1_pos_82.7371_0_56.1656";
   //TString p_g4name  = "A_AntNum_1_pos_827.371_0_561.656";
-  TString p_g4name  = "A_AntNum_0_pos_827.371_0_561.656";
+  //TString p_g4name  = "A_AntNum_0_pos_827.371_0_561.656";
+  TString p_g4name  = "A_AntNum_32_pos_89.8794_0_43.8371";
 
 
   // Now plot
-  //plot(f_zhs, f_g4, p_zhsname, p_g4name,savenames);
+  plot(f_zhs, f_g4, p_zhsname, p_g4name,savenames);
   //plotWithRatio(f_zhs, f_g4, p_zhsname, p_g4name,savenames);
-  plotWithRatio(f_zhs, f_g4, p_zhsname, p_g4name,savenames);
+  //plotWithRatio(f_zhs, f_g4, p_zhsname, p_g4name,savenames);
   
 }
 

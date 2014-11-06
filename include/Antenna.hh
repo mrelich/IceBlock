@@ -32,9 +32,10 @@ class Antenna
   G4double getR(G4double x0, G4double y0, G4double z0);
 
   // Get timing info
-  G4double getTmin() { return m_tStart; };
-  G4double getTmax() { return m_tStart + m_nPoints*m_stepSize; };
-  G4double getTStep(){ return m_stepSize; };
+  G4double getTmin()   { return m_tStart; };
+  G4double getTmax()   { return m_tStart + m_nPoints*m_stepSize; };
+  G4double getTStep()  { return m_stepSize; };
+  G4double getNPoints(){ return m_nPoints; };
 
   // Add vector potential 
   void addPoint(unsigned int ip, 

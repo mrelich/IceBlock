@@ -28,7 +28,9 @@ void AngularDist()
   //TFile* f_in = new TFile(rootdir+"efield_50Evt_40MeV_10000Prim_angleScan_100M_singlePos.root");
   //TFile* f_in = new TFile(rootdir+"efield_50Evt_40MeV_10000Prim_angleScan_100M_singlePos_thresh1MeV.root");
   //TFile* f_in = new TFile(rootdir+"efield_50Evt_40MeV_10000Prim_angleScan_100M_RandFlat3.5.root");
-  TFile* f_in = new TFile(rootdir+"efield_50Evt_40MeV_10000Prim_angleScan_100M_singlePos_TestingEndpointIssue.root");  
+  //TFile* f_in = new TFile(rootdir+"efield_50Evt_40MeV_10000Prim_angleScan_100M_singlePos_TestingEndpointIssue.root");  
+  //TFile* f_in = new TFile(rootdir+"efield_100Evt_40MeV_100Prim_angleScan_100M_singlePos_debug.root");  
+  TFile* f_in = new TFile(rootdir+"test.root");  
 
   // Specify the antenna file
   //ifstream f_ant ("antennaConfig/xzRefracted_40MeV.txt");
@@ -37,6 +39,7 @@ void AngularDist()
 
   // Plot
   plot(f_in,f_ant);
+  //plotZHS();
   //plotFT(f_in,f_ant);
   //compareAnalytic(f_in,f_ant);
   //compareMultipleFiles();
@@ -92,13 +95,14 @@ void plot(TFile* f_in, ifstream &f_ant)
   float maximum = -999;
   while( !f_ant.eof() ){
     
+
     // Get antenna positions
     f_ant >> x >> y >> z >> angle >> dummy >> dummy;
     if( z == prevZ ) continue;
     prevZ = z;
 
     float R = sqrt(x*x+y*y+z*z);
-
+    
     // Make antenna name
     stringstream ss; //ss.str("");
     ss << "A_AntNum_" << counter << "_pos_" 
@@ -108,8 +112,8 @@ void plot(TFile* f_in, ifstream &f_ant)
     
     string antPos = ss.str();
     counter++;
-
-
+    
+    
     // Get the histogram from input file
     TH1F* h_Et = (TH1F*) f_in->Get(antPos.c_str());
     cout<<antPos<<" "<<h_Et<<endl;
@@ -148,6 +152,8 @@ void plot(TFile* f_in, ifstream &f_ant)
   
   // Canvas
   TCanvas* c = makeCanvas("c");
+  c->SetGridx();
+  c->SetGridy();
 
   // Legend
   TLegend* leg = makeLegend(0.15,0.3,0.6,0.93);
@@ -167,6 +173,132 @@ void plot(TFile* f_in, ifstream &f_ant)
       scale += E_freqs[p];
     }
     TGraph* gr = new TGraph(npoints,angles,E_freqs);
+    setAtt(gr,xtitle,ytitle,colors[i]);
+    //scale = gr->Integral(0,-1);
+    gr->Draw("same");
+
+    leg->AddEntry(gr,fnames.at(i),"l");
+
+  }
+  leg->Draw("same");
+
+  //c->SaveAs(m_savedir+"AngularScan_fixedX.png");
+  //c->SaveAs(m_savedir+"AngularScan_singleBunch.png");
+
+}
+
+//-----------------------------------------------//
+// Plot peak for several frequencies
+//-----------------------------------------------//
+void plotZHS()
+{
+
+  TFile* f_in = new TFile("../ZHS_ELSEnergy/rootfiles/EField_100Prim_50Evt_Angular.root");
+
+  // For now, just do this for one frequency
+  //float freq = 800.e6;
+  vector<float> freqs;
+  freqs.push_back(800.e6);
+  freqs.push_back(600.e6);
+  freqs.push_back(400.e6);
+  freqs.push_back(200.e6);
+
+  vector<TString> fnames;
+  fnames.push_back("800 MHz");
+  fnames.push_back("600 MHz");
+  fnames.push_back("400 MHz");
+  fnames.push_back("200 MHz");
+
+  int colors[] = {kBlack,kViolet,kRed,kBlue};
+
+  // Specify some stuff for the graph
+  TString xtitle = "Angle Relative to Beam [deg]";
+  TString ytitle = "|RE(f)| [V]";
+  //TString ytitle = "Normalized";
+  //TString ytitle = "|E(f)| [V]";
+
+  // Place holders for result
+  int npoints = 0;
+  vector<vector<float> > v_E_freqs;
+  for(unsigned int i=0; i<freqs.size(); ++i){
+    vector<float> temp;
+    v_E_freqs.push_back( temp );
+  }
+  
+  // Specify the angles to consider                                                             
+  const int nAngles = 45;
+  float Angles[nAngles];
+  for(int ia=0; ia<nAngles; ++ia)
+    Angles[ia] = 0 + 2*ia;
+
+
+  // Loop over angles
+  float maximum = 0;
+  for(int ia=0; ia<nAngles; ++ia){
+    //cout<<Angles[ia]<<endl;
+    //if(!(55 < Angles[ia] && Angles[ia] < 57)) continue;
+
+    // Make antenna name
+    stringstream ss; //ss.str("");
+    ss << "E_" << Angles[ia];
+    string antPos = ss.str();
+    
+
+    // Get the histogram from input file
+    TH1F* h_Et = (TH1F*) f_in->Get(antPos.c_str());
+    cout<<antPos<<" "<<h_Et<<endl;
+    if( !h_Et ) continue;
+    // Get fourier transform
+    // First obtain the sum of the electric field
+    int nbins = h_Et->GetNbinsX();
+    float xmin = h_Et->GetBinLowEdge(1);
+    float xmax = h_Et->GetBinLowEdge(nbins) + h_Et->GetBinWidth(nbins);
+    //cout<<"Min: "<<xmin<<" max: "<<xmax<<" nbins: "<<nbins<<" Step: "<<((xmax-xmin)/nbins)*1e9<<endl;
+
+    // Now fourier transform that shit
+    TH1F* h_Ef = (TH1F*) h_Et->FFT(NULL,"MAG");
+    TH1F* h_Ef_format = remake(h_Ef,nbins,xmin,xmax);
+  
+    // Now get the point we are interested in
+
+    for(unsigned int i=0; i<freqs.size(); ++i){
+      int bin = h_Ef_format->FindBin(freqs.at(i));
+      //v_E_freqs.at(i).push_back( R*h_Ef_format->GetBinContent(bin) );
+      v_E_freqs.at(i).push_back( h_Ef_format->GetBinContent(bin) );
+      if( maximum < v_E_freqs.at(i).back() )
+	maximum = v_E_freqs.at(i).back();
+    }
+    npoints++;
+
+    delete h_Et;
+    delete h_Ef;
+    delete h_Ef_format;
+
+  }// end loop over antenna file
+
+  // Canvas
+  TCanvas* c = makeCanvas("c");
+  c->SetGridx();
+  c->SetGridy();
+
+  // Legend
+  TLegend* leg = makeLegend(0.15,0.3,0.6,0.93);
+
+  // Make a frame object
+  TH1F* h = makeHist("frame",1,0,90,xtitle,ytitle,0,0);
+  h->SetMinimum(0);
+  h->SetMaximum(1.2*maximum);
+  
+  h->Draw();
+
+  float scale = 0;
+  for(unsigned int i=0; i<freqs.size(); ++i){
+    float E_freqs[10000];
+    for(int p=0; p<npoints; ++p){
+      E_freqs[p] = v_E_freqs[i][p];
+      scale += E_freqs[p];
+    }
+    TGraph* gr = new TGraph(npoints,Angles,E_freqs);
     setAtt(gr,xtitle,ytitle,colors[i]);
     //scale = gr->Integral(0,-1);
     gr->Draw("same");
@@ -306,11 +438,11 @@ void plotFT(TFile* f_in, ifstream &f_ant)
   angles.push_back(90);
   */
   angles.push_back(50);
-  angles.push_back(52);
   angles.push_back(54);
-  angles.push_back(56);
   angles.push_back(58);
-  angles.push_back(60);
+  angles.push_back(62);
+  angles.push_back(66);
+  angles.push_back(70);
 
   int colors[] = {kBlack,kViolet,kRed,kBlue,kGreen,
                   kYellow-6, kGreen+2, kCyan+1,kBlue+2,kPink};

@@ -13,10 +13,17 @@
 // on how you want to mix the events.
 double m_scale  = 1;  // scaling factor for 
 
-// Save information
+//int m_nBunches = 5; // Number of bunches to include
+int m_nBunches = 1; // Number of bunches to include
+
+// Save to plot 
 bool m_save = false;
-//TString m_savedir = "plots/EField/RefractedEField/";
-TString m_savedir = "plots/EField/RefractedEField_BinningCheck/";
+TString m_savedir = "plots/EField/RefractedEField/";
+//TString m_savedir = "plots/EField/RefractedEField_BinningCheck/";
+
+// Save to root file
+TString m_rootdir = "rootfiles/EField/";
+
 
 //-------------------------------------------------//
 // Main
@@ -32,10 +39,15 @@ void EField(int opt = 0, bool save=false)
   //TString fname = dir + "Output_5Evt_40MeV_10000Prim_HardCodedAntenna_R10m.root";
   //TString fname = dir + "Output_57Evt_40MeV_1000Prim_HardCodedAntenna_ROldConfig.root";
   //TString fname = dir + "Output_5Evt_40MeV_10000Prim_xzUnRefracted_40MeV.root";
-  TString fname = dir + "Output_5Evt_40MeV_10000Prim_xzRefracted_40MeV.root";
+  //TString fname = dir + "Output_5Evt_40MeV_10000Prim_xzRefracted_40MeV.root";
+  TString fname = dir + "Output_50Evt_40MeV_10000Prim_AngleScan_100m_singlePos.root";
+  
+  // Specify antenna file to go along with input file
+  ifstream antFile ("antennaConfig/AngleScane_100m.txt");
 
   // Calculate the scale factor
-  m_scale = 1.e9 / 5 / 10000; 
+  m_scale = 1.e9 / 10000. / m_nBunches * 100; 
+  //m_scale = 1.e9 / 100. / m_nBunches; 
   cout<<"Scaling by : "<<m_scale<<endl;
  
   // Plot single
@@ -44,7 +56,7 @@ void EField(int opt = 0, bool save=false)
 
   // Plot multiple
   if(opt == 1)
-    plotMultiple(fname);
+    plotMultiple(fname, antFile);
 
   // Plot refracted result
   if(opt == 2){
@@ -62,6 +74,11 @@ void EField(int opt = 0, bool save=false)
   // Investigate vector potential 
   if(opt == 4)
     plotVPComp();
+
+  // Plot Multi bunch electric field and
+  // save the output to root file
+  if(opt == 5)
+    saveMultipleRefracted();
 
 }
 
@@ -105,41 +122,120 @@ void plotSingle(TString infile)
 //-------------------------------------------------//
 // Plot multiple events
 //-------------------------------------------------//
-void plotMultiple(TString infile)
+void plotMultiple(TString infile, ifstream &antFile)
 {
 
-  // Make canvas
-  TCanvas* c = makeCanvas("c");
+  // Make LEgend
+  TLegend* leg = makeLegend(0.7,0.8,0.8,0.93);
 
-  // Specify the antenna position
-  //TString antPos = "A_AntNum_0_pos_8.27371_0_5.61656";
-  TString antPos = "A_AntNum_0_pos_6_0_4.04";
+  // What to read in from file
+  double x = 0, y=0, z = 0, angle = 0, dummy = 0;
+  double prevZ = 0;
+  int counter = 0;
+  TString antPos = "";
+  while( !antFile.eof()  ){
 
-  // Open input file
-  TFile* file = new TFile(infile.Data());
+    // Make canvas
+    TCanvas* c = makeCanvas("c");
 
-  // Load the vector potential
-  TH1D* A = makeSumVPot(file, 57, antPos, 0.350); 
-  A->Scale(m_scale);
+    antFile >> x >> y >> z >> angle >> dummy >> dummy;
+    
+    if( z == prevZ ) continue;
+    prevZ = z;
 
-  // Now get the E-field
-  TGraph* E = getEField(A);
+
+    stringstream ss; ss.str("");
+    ss << "A_AntNum_" << counter << "_pos_"
+       << x << "_"
+       << y << "_"
+       << z;
+    counter ++;
+    
+    string s = ss.str();
+    antPos = TString(s.c_str());
+    cout<<antPos<<endl;
+    // Specify the antenna position
+    //TString antPos = "A_AntNum_0_pos_8.27371_0_5.61656";
+    //TString antPos = "A_AntNum_0_pos_6_0_4.04";
+    
+    // Open input file
+    TFile* file = new TFile(infile.Data());
+    
+    // Load the vector potential
+    TH1D* A = makeSumVPot(file, 5, antPos, 0.350); 
+    A->Scale(m_scale);
+    
+    // Now get the E-field
+    TGraph* E = getEField(A);
+    
+    // Set some attributes
+    TString xtitle = "time [ns]";
+    TString ytitle = "E [V/m]";
+    int color = kBlue;
+    setAtt(E, xtitle, ytitle, color);
+    
+    // Draw
+    E->Draw();
+    
+    // Add Legend
+    leg->Clear();
+    leg->SetHeader(Form("Angle: %.0f",angle));
+    leg->Draw("same");
+
+    // Save
+    c->SaveAs((m_savedir+"AngularScan/"+antPos+"_5Bunch.png"));
+    
+    delete c;
+    delete E;
+    delete A;
+
+  }// end loop over points
   
-  // Set some attributes
-  TString xtitle = "time [ns]";
-  TString ytitle = "E [V/m]";
-  int color = kBlue;
-  setAtt(E, xtitle, ytitle, color);
-
-  // Draw
-  E->Draw();
-
 }
 
 //-------------------------------------------------//
 // Method to retrive efield from vector potential
 //-------------------------------------------------//
-TGraph* getEField(TH1D* A, double dt = 0)
+TH1F* getEField(TH1D* A, double dt)
+{
+
+  // Conversion for seconds
+  float tconv = 1e-9;
+  
+  // Get bins for e-field hist
+  int nbins = A->GetNbinsX();
+  float xmin = A->GetXaxis()->GetXmin() * tconv;
+  float xmax = A->GetXaxis()->GetXmax() * tconv;
+  
+  // Shift bin width so we start at 0;
+  float bw = A->GetBinWidth(1) * tconv;
+  //xmin += bw/2.;
+  xmax *= 2;
+  xmax += bw/2;
+  //xmax += fabs(xmin);
+  xmin = 0;
+  int nebins = (int) (xmax/bw);
+  
+  // Now make histogram
+  TH1F* E = new TH1F("E","E",nebins,xmin,xmax);
+  
+  // Now loop 
+  //for(int bin=1; bin<nbins; ++bin){
+  for(int bin=1; bin<nbins; ++bin){
+    float A0 = A->GetBinContent(bin);
+    float A1 = A->GetBinContent(bin+1);
+    float bc = A->GetBinCenter(bin) * tconv;
+    int newbin = E->FindBin(bc);
+    E->SetBinContent(newbin,(A1-A0)/bw);
+    //if( 593.7e-9 < bc && bc < 594e-9)
+    // cout<<"BC: "<<bc<<" A1: "<<A1<<" A0: "<<A0<< " E: " <<(A1-A0)/bw<<endl;
+  }
+  
+  return E;
+  
+}
+
+TGraph* getEField2(TH1D* A, double dt = 0)
 {
 
   // Graph points
@@ -288,6 +384,117 @@ void plotRefractedCompare(bool doSingle)
 }
 
 //-------------------------------------------------//
+// Save E-field for refracted ang
+//-------------------------------------------------//
+void saveMultipleRefracted()
+{
+
+  // Define the file to write to
+  //TFile* f_output = new TFile((m_rootdir+"efield_50Evt_40MeV_10000Prim_angleScan_100M_singlePos_TestingEndpointIssue.root"),"recreate");
+  //TFile* f_output = new TFile((m_rootdir+"efield_100Evt_40MeV_100Prim_angleScan_100M_singlePos_debug.root"),"recreate");
+  TFile* f_output = new TFile((m_rootdir+"test.root"),"recreate");
+
+  // Specify the root files that corespond to the 
+  // two input files above
+  TString indir = "efieldroot/";
+  //TFile* f_nom = new TFile((indir+"Output_50Evt_40MeV_10000Prim_AngleScan_100m_singlePos_TestingEndpointIssue.root"));
+  //TFile* f_nom = new TFile((indir+"A_output_100_40_ice_eBeam_np100_AngleScane_100m_singlePos_debug.root"));
+  //TFile* f_nom = new TFile((indir+"A_output_1000_40_ice_eBeam_np100_AngleScan_100m_singlePos_debug.root"));
+  //TFile* f_nom = new TFile((indir+"A_output_100_40_ice_eBeam_np100_AngleScan_100m_singlePos_debug.root"));
+  //TFile* f_nom = new TFile((indir+"Output_50Evt_40MeV_10000Prim_AngleScan_100m_singlePos_TestingEndpointIssue.root"));
+  TFile* f_nom = new TFile((indir+"A_output_20_40_ice_eBeam_np10000_AngleScan_100m_singlePos_debug.root"));
+  f_nom->cd();
+
+  // Specify the antenna files to consider
+  // Important: It is assumed file lengths are the 
+  // same, so there is a one-to-one coreespondence
+  //ifstream m_nom ("antennaConfig/xzRefracted_40MeV.txt");
+  //ifstream m_nom ("antennaConfig/AngleScane_100m.txt");
+  ifstream m_nom ("antennaConfig/AngleScan_100m.txt");
+    
+  // Graph labels and stuff
+  TString xtitle = "time [ns]";
+  TString ytitle = "E [V/m]";
+
+  // Holders
+  int counter = 0;
+  TString antPos   = "";
+  double angle     = 0;
+  double refAngle  = 0;
+  double  R        = 0;
+  double  Rprime   = 0;
+  double  x=0, y=0, z=0;
+  double zprime = 0;
+  double prevZ = 0;
+
+  // Loop over the file
+  while( !m_nom.eof() ){
+    
+    getAntPos(m_nom, counter, antPos, 
+	      angle, refAngle, 
+	      x,y,z,
+	      R, Rprime,
+	      zprime);
+    counter++;
+
+    // Protect against last step going 
+    // beyond the end of file
+    if( z == prevZ ) continue;
+    prevZ = z;
+
+    //if( !(55 < angle && angle < 57) ) continue;
+    //cout<<"Working on angle: "<<angle<<endl;
+    //cout<<"Plot: "<<antPos<<endl;
+
+    // Save just one antenna for now
+    //if( antPos != "A_AntNum_26_pos_6_0_4.04705" ) continue;
+
+    // So now I have the antenna names from the file
+    // we can plot single or multiple plots. Go with 
+    // single first
+    TH1D* A_nom = NULL;
+    TH1D* A_ref = NULL;
+    A_nom = makeSumVPot(f_nom, m_nBunches, antPos, 0.350); 
+
+    // Copy nominal to reference
+    A_ref = (TH1D*) A_nom->Clone("refracted");
+    
+    // Scale
+    A_ref->Scale(m_scale * R/Rprime);
+
+
+    // Get the refracted result with timing offset
+    double dt = 1.78 * (Rprime - R)/ 2.99792458e8 / 1e-9;
+    //TGraph* gr_ref = getEField(A_ref, dt);
+    TH1F* h_ref = getEField(A_ref, dt);
+    setHistAtt(h_ref,xtitle,ytitle,kBlue,20);
+    h_ref->SetName(antPos);
+    //gr_ref->SetName(antPos);
+    //TH1F* h_ref = convertToHist(gr_ref,antPos);
+    //TH1F* h_ref = convertToHist(gr_ref,"efield");
+
+    // Save
+    f_output->cd();
+    //gr_ref->Write();
+    h_ref->Write();
+    f_nom->cd();
+
+    // Clean up
+    //delete gr_ref;
+    delete h_ref;
+    delete A_nom;
+    delete A_ref;
+
+  }// end loop over antennas
+
+  // Clean up
+  f_nom->Close();
+  f_output->Write();
+  f_output->Close();
+
+}
+
+//-------------------------------------------------//
 // Plot E-field comparing nominal vs. refracted ang
 //-------------------------------------------------//
 void plotMaxEVsZ()
@@ -304,6 +511,7 @@ void plotMaxEVsZ()
   //TFile* f_nom = new TFile((indir+"Output_5Evt_40MeV_10000Prim_xzRefracted_40MeV.root").Data());
   //TFile* f_nom = new TFile((indir+"Output_50Evt_40MeV_10000Prim_xzRefracted_40MeV.root").Data());
   TFile* f_nom = new TFile((indir+"Output_50Evt_40MeV_10000Prim_xzRefracted_40MeV_BinningCheck.root").Data());
+
 
   // Make canvas
   TCanvas* c = makeCanvas("c");
@@ -486,6 +694,18 @@ TH1D* makeSumVPot(TFile* file, int nEvents,
 
   }// end loop over events
 
+  /* This also seems to cause some distortion!
+    for(int bin=1; bin<=nbins; ++bin){
+    float bc = A->GetBinContent(bin);
+    if( bc == 0 && bin > 0 && bin < nbins){
+      float prev = A->GetBinContent(bin-1);
+      float next = A->GetBinContent(bin+1);
+      if( prev != 0 && next != 0 )
+	A->SetBinContent(bin, (prev+next)/2.);
+    }
+  }
+  */
+
   // Return hist
   return A;
 
@@ -498,8 +718,8 @@ TString makePName(int Evt, TString antPos)
 {
 
   stringstream ss;
-  ss << antPos << "_Event" << Evt;
-
+  //ss << antPos << "_Event" << Evt;
+  ss << antPos;
   return TString(ss.str().c_str());
 
 }
@@ -611,5 +831,58 @@ void plotVPComp()
   // Save
   if( m_save )
     c->SaveAs((m_savedir+"VPCheckForSpikes_LargerBins.png").Data());
+
+}
+
+//-------------------------------------------------//
+// Graph to histogram
+//-------------------------------------------------//
+TH1F* convertToHist(TGraph* gr, TString name)
+{
+
+  // Throwing in some magic here... It turns out the 
+  // Fourier transform doesn't like it if you don't
+  // start at zero.  So I need to artificially move
+  // the signal to start at zero...
+
+  // Some generic variables 
+  double x = 0;
+  double y = 0;
+  int np   = gr->GetN();
+  
+  // xmin and xmax
+  double xmin =0;
+  gr->GetPoint(0,xmin,y);
+  xmin *= 1e-9;
+
+  // Get step size
+  double dx = 0;
+  gr->GetPoint(1,dx,y);
+  dx *= 1e-9;
+  dx -= xmin;
+
+  
+  // Magic
+  int adj = (int) (xmin/dx);
+  int NP = np + 1 + adj;
+  cout<<"NP: "<<NP<<" np: "<<np<<endl;
+  cout<<xmin/dx<<" "<<adj<<endl;
+  // Create histogram
+  //TH1F* h = new TH1F(name,"",np-1,xmin-dx/2.,xmax-dx/2.);
+  //TH1F* h = new TH1F(name+"_hist","",NP,0.,xmax - adjust );
+  TH1F* h = new TH1F(name,"",NP,0.,NP*dx);
+
+  // Now fill
+  for(int i=0; i<np; ++i){
+    gr->GetPoint(i,x,y);
+    int bin = h->FindBin(x*1e-9);
+    //int bin = h->FindBin(x);
+    h->SetBinContent(bin,y);
+    h->SetBinError(bin,0.); // for now... not sure how to get this from graph
+                            // should include stat error from Vpotential
+  }// end line
+
+  // Return
+  return h;
 
 }

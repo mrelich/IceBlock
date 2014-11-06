@@ -82,3 +82,31 @@ def setAtt(hist, color, marker):
     hist.SetMarkerSize(0.75)
     return hist
 
+
+#---------------------------#
+# Make 2 D hist
+#---------------------------#
+def makeHist2(name,nbinsx,xmin,xmax,
+              nbinsy,ymin,ymax,
+              xtitle,ytitle,ztitle):
+    
+    hist = TH2F(name,name,nbinsx,xmin,xmax,
+                nbinsy,ymin,ymax)
+    hist.GetXaxis().SetTitle(xtitle)
+    hist.GetYaxis().SetTitle(ytitle)
+    hist.GetZaxis().SetTitle(ztitle)
+    return hist
+
+#---------------------------#
+# Make 2 D profile
+#---------------------------#
+def makeProf2(name,nbinsx,xmin,xmax,
+              nbinsy,ymin,ymax,
+              xtitle,ytitle,ztitle):
+    
+    prof = TProfile2D(name,name,nbinsx,xmin,xmax,
+                      nbinsy,ymin,ymax)
+    prof.GetXaxis().SetTitle(xtitle)
+    prof.GetYaxis().SetTitle(ytitle)
+    prof.GetZaxis().SetTitle(ztitle)
+    return prof
