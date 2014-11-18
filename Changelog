@@ -1,3 +1,7 @@
+2014-11-18 Matt:
+	* Bunch structure added with delta function spikes.
+		- Will add more later to test this crazy bunch structure we will have
+
 2014-11-06 Matt:
 	* There was an error in how I was handling the bins. I was putting things into a Profile,
 		which will average the result if multiple entries end up in one bin. However this

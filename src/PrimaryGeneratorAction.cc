@@ -11,11 +11,15 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC,
 					       G4int n_particle,
 					       G4bool b_flat,
 					       G4bool b_gauss,
-					       G4double sigma) :
+					       G4double sigma,
+					       G4int nbunch,
+					       G4double tOffset) :
   myDetector(NULL),
   m_flat(b_flat),
   m_gauss(b_gauss),
-  m_sigma(sigma)
+  m_sigma(sigma),
+  m_nbunch(nbunch),
+  m_tOffset(tOffset)
 {
 
   //
@@ -74,66 +78,81 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // flat distribution with some width, and the original way,
   // which is to place them all at (0,0,0).
 
-  // Gaussian
-  if( m_gauss ){
+  // In addition we have the ability to create a bunch train. The
+  // user should specify the bunch number and time delay between
+  // bunches.  We can get more fancy and make it a time delay
+  // distribution, but for right now that seems overkill.
+
+  // Bunch train
+  for(int nb = 0; nb < m_nbunch; ++nb){
+
+    G4double tstart = nb * m_tOffset * ns;
+
+    // Gaussian
+    if( m_gauss ){
+      
+      // Setup random Gaussian with some seed.
+      G4double x_rand = 0.0;
+      G4double y_rand = 0.0;
+      //for(G4int i=0; i<m_nParticles; ++i){
+      for(G4int i=0; i<m_nParticles; ++i){
+	x_rand = G4RandGauss::shoot(0,m_sigma);
+	y_rand = G4RandGauss::shoot(0,m_sigma);
+	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
+	particleGun->SetParticleTime(tstart);
+	particleGun->GeneratePrimaryVertex(anEvent);
+	//(*f_test) << x_rand <<" " << y_rand << std::endl;
+      }// end loop over # particles
+      
+    }// end if gauss
     
-    // Setup random Gaussian with some seed.
-    G4double x_rand = 0.0;
-    G4double y_rand = 0.0;
-    //for(G4int i=0; i<m_nParticles; ++i){
-    for(G4int i=0; i<m_nParticles; ++i){
-      x_rand = G4RandGauss::shoot(0,m_sigma);
-      y_rand = G4RandGauss::shoot(0,m_sigma);
-      particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
-      particleGun->GeneratePrimaryVertex(anEvent);
-      //(*f_test) << x_rand <<" " << y_rand << std::endl;
-    }// end loop over # particles
-
-  }// end if gauss
-
-  // Flat distribution
-  else if( m_flat ){
-
-    // Get uniform random number
-    G4double x_rand  = 0;
-    G4double y_rand  = 0;
-    G4double x_sign  = 1;
-    G4double y_sign  = 1;
-    for(G4int i=0; i<m_nParticles; ++i){
+    // Flat distribution
+    else if( m_flat ){
       
-      x_rand = 999;
-      y_rand = 999;
-      x_sign = 1;
-      y_sign = 1;
-      if( G4UniformRand() < 0.5 ) x_sign = -1;
-      if( G4UniformRand() < 0.5 ) y_sign = -1;
+      // Get uniform random number
+      G4double x_rand  = 0;
+      G4double y_rand  = 0;
+      G4double x_sign  = 1;
+      G4double y_sign  = 1;
+      for(G4int i=0; i<m_nParticles; ++i){
+	
+	x_rand = 999;
+	y_rand = 999;
+	x_sign = 1;
+	y_sign = 1;
+	if( G4UniformRand() < 0.5 ) x_sign = -1;
+	if( G4UniformRand() < 0.5 ) y_sign = -1;
+	
+	// Make sure radius is <= m_sigma
+	while( sqrt( x_rand*x_rand + y_rand*y_rand ) > m_sigma ){
+	  x_rand = m_sigma * G4UniformRand();
+	  y_rand = m_sigma * G4UniformRand();
+	}
+	x_rand *= x_sign;
+	y_rand *= y_sign;
+	
+	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
+	particleGun->SetParticleTime(tstart);
+	particleGun->GeneratePrimaryVertex(anEvent);
+	//(*f_test) << x_rand <<" " << y_rand << std::endl;
+	
+      }// end loop over # particles
       
-      // Make sure radius is <= m_sigma
-      while( sqrt( x_rand*x_rand + y_rand*y_rand ) > m_sigma ){
-	x_rand = m_sigma * G4UniformRand();
-	y_rand = m_sigma * G4UniformRand();
+    }// end if flat distribution
+    
+    // Nominal: all at (0,0,0)
+    else{
+      
+      G4ThreeVector startPos = G4ThreeVector(0*mm,0*mm,0*mm);
+      for(G4int i=0; i<m_nParticles; ++i){
+	particleGun->SetParticlePosition(startPos);
+	particleGun->SetParticleTime(tstart);
+	particleGun->GeneratePrimaryVertex(anEvent);
       }
-      x_rand *= x_sign;
-      y_rand *= y_sign;
-
-      particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
-      particleGun->GeneratePrimaryVertex(anEvent);
-      //(*f_test) << x_rand <<" " << y_rand << std::endl;
-
-    }// end loop over # particles
-
-  }// end if flat distribution
+      
+    }// End default (0,0,0) starting point for all particles
   
-  // Nominal: all at (0,0,0)
-  else{
+  }// end loop over bunch structure
 
-    G4ThreeVector startPos = G4ThreeVector(0.01*mm,0.1*mm,0*mm);
-    for(G4int i=0; i<m_nParticles; ++i){
-      particleGun->SetParticlePosition(startPos);
-      particleGun->GeneratePrimaryVertex(anEvent);
-    }
-
-  }// End default (0,0,0) starting point for all particles
-  
 }
 

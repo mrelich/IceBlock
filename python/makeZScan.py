@@ -6,6 +6,7 @@
 # be able to see the Chrenkov angle.                             #
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
+from math import sqrt, atan, pi
 
 #-------------------------#
 # Output file name
@@ -38,7 +39,18 @@ stepsize = 0.1 # [m]
 #-------------------------#
 
 for z in range(int((zmax-zmin)/stepsize)+1):
-    
+
+    # Need to add some dummy information
+    zpos = zmin + z*stepsize
+    R = sqrt(xpos*xpos+ypos*ypos+zpos*zpos)
+    theta = pi/2
+    if zpos != 0:
+        theta = atan(xpos/zpos)
+    refAngle = -1
+    phi = -1
+    Rprime = R
+    zprime = zpos
+
     # Write x
     outfile.write(str(xpos)+"\t")
     
@@ -46,7 +58,12 @@ for z in range(int((zmax-zmin)/stepsize)+1):
     outfile.write(str(ypos)+"\t")
     
     # Write z
-    outfile.write(str(zmin+z*stepsize)+"\n")
+    outfile.write(str(zpos)+"\t")
+    
+    # dummy angles
+    outfile.write(str(theta*180/pi)+"\t")
+    outfile.write(str(refAngle*180/pi)+"\t")
+    outfile.write(str(zprime)+"\n")
         
 
 outfile.close()

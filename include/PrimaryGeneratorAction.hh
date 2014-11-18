@@ -20,7 +20,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   // Constructor / Destructor
   PrimaryGeneratorAction(DetectorConstruction*, G4float, std::string, G4int,
-			 G4bool, G4bool, G4double);
+			 G4bool, G4bool, G4double, G4int, G4double);
   ~PrimaryGeneratorAction();
 
   void GeneratePrimaries(G4Event*);
@@ -35,6 +35,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   G4bool m_flat;       // True for random flat distribution
   G4bool m_gauss;      // True for random gauss distribution
   G4double m_sigma;    // Describe width of two distributions
+
+  G4int m_nbunch;      // Adding ability to add offset
+  G4double m_tOffset;  // Adding offset for bunch structure
 
   //std::ofstream* f_test; // Used to get data on beam profile
 };

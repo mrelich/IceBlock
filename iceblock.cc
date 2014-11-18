@@ -66,6 +66,10 @@ void help()
   cout << "\t Inject random flat distribution with width <float> [mm]" << endl;
   cout << "--gauss <float>" << endl;
   cout << "\t Inject Gaussian distribution with <float> sigma [mm]" << endl;
+  cout << "--nbunch <int>" << endl;
+  cout << "\t Create N bunches" << endl;
+  cout << "--offset <float>" << endl;
+  cout << "\t Timing offset for bunches (default 0.35 ns)"<<endl;
   cout << "------------------------------------------------------------" << endl;
   cout << endl;
   cout << endl;
@@ -90,9 +94,11 @@ int main(int argc, char** argv)
   G4double threshold     = 0;
   bool useThreshold      = false;
   std::string antFile    = "";
-  G4bool b_flat            = false;
-  G4bool b_gauss           = false; 
+  G4bool b_flat          = false;
+  G4bool b_gauss         = false; 
   G4double sigma         = 0;
+  G4int nbunches         = 1;
+  G4double tOffset       = 0.350;
 
   // Options
   for(int i=1; i<argc; ++i){
@@ -120,6 +126,12 @@ int main(int argc, char** argv)
       b_gauss = true;
       sigma = atof( argv[++i] );
     }
+    else if( strcmp(argv[i], "--nbunch") == 0 )
+      nbunches = atoi( argv[++i] );
+    else if( strcmp(argv[i], "--offset") == 0 )
+      tOffset = atof( argv[++i] );
+
+
     else{
       help();
       return 0;
@@ -177,7 +189,8 @@ int main(int argc, char** argv)
   // If threshold is set, append to file
   if(useThreshold) ss << "_thresh" << threshold << "MeV";
 
-  ss << "_debug";
+  // Add number of bunches information
+  ss << "_bunches" << nbunches;
 
   // Setup the Antennas
   SetupAntenna* m_AntSetup = new SetupAntenna(antFile);
@@ -212,7 +225,9 @@ int main(int argc, char** argv)
 	  << beamEnergy << " "
 	  << m_Ants.size() << " "
 	  << m_Ants.at(0)->getNPoints() << " "
-	  << m_Ants.at(0)->getTStep()   
+	  << m_Ants.at(0)->getTStep()   << " "
+	  << nbunches                   << " "
+	  << tOffset
 	  << G4endl;
 
   // My output tree
@@ -225,7 +240,8 @@ int main(int argc, char** argv)
 								 beamEnergy,
 								 partType,
 								 nParticles,
-								 b_flat, b_gauss, sigma);  
+								 b_flat, b_gauss, sigma,
+								 nbunches, tOffset);  
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
   runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput,
