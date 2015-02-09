@@ -12,13 +12,14 @@ from math import sqrt, atan, pi
 # Output file name
 #-------------------------#
 
-outfile = open("antennaConfig/xz_40MeV.txt","w")
+#outfile = open("antennaConfig/xz_40MeV.txt","w")
+outfile = open("antennaConfig/xz_730cmAway_40MeV.txt","w")
 
 #-------------------------#
 # Fix x-y position
 #-------------------------#
 
-xpos = 6 # [m]
+xpos = 7.3 # [m]
 ypos = 0 # [m]
 
 #-------------------------#

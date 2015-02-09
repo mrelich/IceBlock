@@ -64,7 +64,7 @@ else:
 #
 
 # Nparticles
-stepsize = 1.0 # Determines bin size for NPart plot
+stepsize = 0.1 # Determines bin size for NPart plot
 npMin    = 0
 npMax    = 20.
 npBins   = int(npMax/stepsize)

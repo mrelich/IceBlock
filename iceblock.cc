@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 					    &APotOut,
 					    &m_Ants));
   runManager->SetUserAction(new SteppingAction(&stepOutput, &m_Ants));
-  runManager->SetUserAction(new TrackingAction(&trackOutput));
+  //runManager->SetUserAction(new TrackingAction(&trackOutput));
 
   // Initialize G4 Kernel
   runManager->Initialize();

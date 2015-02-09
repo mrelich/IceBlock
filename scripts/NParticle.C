@@ -28,42 +28,51 @@ void basic()
 {
   
   // Specify the beam energy
-  TString energy = "100000"; // MeV
-  TString eLbl   = "100 GeV";
+  TString energy = "40"; // MeV
+  TString eLbl   = "40 MeV";
 
   // Get the file
-  TString fname = "rootfiles/TrkAna_100_";
+  //TString fname = "rootfiles/TrkAna_100_";
   //TString fname = "rootfiles/TrkAna_50_";
+  TString fname = "rootfiles/TrkAna_1_";
   fname += energy;
-  fname += "_ice_eBeam.root";
-  TFile* file = new TFile(fname.Data());
+  fname += "_ice_eBeam_np100000_1MeV_larger.root";
+  //TFile* file = new TFile(fname.Data());
+  TFile* file = new TFile("rootfiles/LowEnergyStudy_40_ice_eBeam_np100000.root");
+  float scale = 1e9 / 5. / 100000.;
 
   // Plots
   vector<TString> pnames;
-  pnames.push_back("NPartSum");
+  //pnames.push_back("NPartSum");
   pnames.push_back("NPartDiff");
 
   // Names
   vector<TString> names;
-  names.push_back("N(e+p)");
+  //names.push_back("N(e+p)");
   names.push_back("N(e-p)");
 
   // Make canvas
   TCanvas* c = makeCanvas("c");
-  
+  c->SetLogy();
+
   // Make legend
-  TLegend* leg = makeLegend(0.6,0.7,0.9,0.7);
+  TLegend* leg = makeLegend(0.6,0.7,0.93,0.8);
   leg->SetHeader(("E_{beam} = " + eLbl).Data());
 
   // Loop and get plots
-  TProfile* profs[2];
+  //TProfile* profs[2];
+  TH1D* profs[2];
   float maximum = -999;
   for(unsigned int i=0; i<pnames.size(); ++i){
     TString pname = pnames.at(i);
-    profs[i] = getProfile(file,pname,"Radiation Length",
-			  "Number of Particles", colors[i],
-			  markers[i]);
+    profs[i] = (getProfile(file,pname,"Shower Depth [cm]",
+			   "Number of Particles", colors[i],
+			   markers[i]))->ProjectionX((pname+"_hist"));
     
+    profs[i]->SetStats(0);
+    profs[i]->Scale(scale);
+    profs[i]->GetXaxis()->SetRange(1, profs[i]->FindBin(80));
+
     if( maximum < profs[i]->GetMaximum())
       maximum = profs[i]->GetMaximum();
     
@@ -73,11 +82,12 @@ void basic()
   // Now draw
   profs[0]->SetMaximum(1.2*maximum);
   profs[0]->Draw();
-  for(unsigned int i=0; i<pnames.size(); ++i)
+  for(unsigned int i=1; i<pnames.size(); ++i)
     profs[i]->Draw("same");
   leg->Draw("same");
 
-  c->SaveAs("plots/NParticles/basic_100_100000_eBeam.png");
+  //c->SaveAs("plots/NParticles/basic_100_100000_eBeam.png");
+  c->SaveAs("plots/NParticles/NPartDiff_40MeV_5bunchesAssumed.png");
 
 }
 

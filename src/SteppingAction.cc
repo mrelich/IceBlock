@@ -191,7 +191,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     G4double tD0 = getTDetector(AntPos, P0, t0, m_n, m_c);
     G4double tD1 = getTDetector(AntPos, P1, t1, m_n, m_c);
       
-      //G4acout<<"tD: "<<tD0<<" "<<tD1<<" t: "<<t0<<" "<<t1<<G4endl;
+    //G4acout<<"tD: "<<tD0<<" "<<tD1<<" t: "<<t0<<" "<<t1<<G4endl;
 
     // Load the antenna timing information
     G4double AntTmin  = ant->getTmin() * 1e-9;  // in seconds
@@ -212,7 +212,6 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     }
 
     // Don't count if out of bounds
-    // This seems a bit dodgy... RETURN
     if(iEnd < iFirstBin)  continue;
     if(iStart > iLastBin) continue;
     if(iEnd > iLastBin)    iEnd = iLastBin;
@@ -233,7 +232,14 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     G4double Ax = constA * ( V.x() - V.dot(u)*u.x() );
     G4double Ay = constA * ( V.y() - V.dot(u)*u.y() );
     G4double Az = constA * ( V.z() - V.dot(u)*u.z() );
-    
+
+    //G4cout<<"A: "<<Ax<<" "<<Ay<<" "<<Az<<G4endl;
+    //G4cout<<"v: "<<V<<G4endl;
+    //G4cout<<"dot: "<<V.dot(u)*u.x()
+    //	  <<" "<<V.dot(u)*u.y()
+    //	  <<" "<<V.dot(u)*u.z()
+    //	  <<G4endl;
+
     // The binning seems to be the most difficult part. There
     // is a 'factor' that is attached to the binning determined
     // by a few limiting cases.  One of the parameters needed is
