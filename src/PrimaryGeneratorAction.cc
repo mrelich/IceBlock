@@ -13,13 +13,15 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC,
 					       G4bool b_gauss,
 					       G4double sigma,
 					       G4int nbunch,
-					       G4double tOffset) :
+					       G4double tOffset,
+					       BeamProfile* bp) :
   myDetector(NULL),
   m_flat(b_flat),
   m_gauss(b_gauss),
   m_sigma(sigma),
   m_nbunch(nbunch),
-  m_tOffset(tOffset)
+  m_tOffset(tOffset),
+  m_bp(NULL)
 {
 
   //
@@ -55,6 +57,11 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC,
   G4RandGauss::setTheSeed(1234567654);
   CLHEP::RandFlat::setTheSeed(1234567654);
 
+  //
+  // Set the beam profile object
+  //
+  m_bp = bp;
+
 }
 
 //-----------------------------------------------------------------//
@@ -83,19 +90,31 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // bunches.  We can get more fancy and make it a time delay
   // distribution, but for right now that seems overkill.
 
-  // Bunch train
-  for(int nb = 0; nb < m_nbunch; ++nb){
+  // Update Feb 9: Adding the option to read in beam profile that
+  // is taken from the WC monitor. This is stored as a BeamProfile
+  // object and is called m_bp in this class.
 
-    G4double tstart = nb * m_tOffset * ns;
+  // Check if bp is initialized, if so use it.
+  int nbunches = m_bp->isInit() ? m_bp->getN() : m_nbunch;
 
+  // Loop over the bunches
+  for(int nb = 0; nb < nbunches; ++nb){
+
+    // Set the starting time and number of particles
+    // per bunch. Again use bp info if initialized
+    G4double tstart  = nb * m_tOffset * ns;
+    G4int nparticles = (m_bp->isInit() ? m_bp->getQRatio(nb) : 1. ) * m_nParticles;
+    
+    G4cout<<"Bunch: "<<nb<<" npart: "<<nparticles<<G4endl;
+    
     // Gaussian
     if( m_gauss ){
       
       // Setup random Gaussian with some seed.
       G4double x_rand = 0.0;
       G4double y_rand = 0.0;
-      //for(G4int i=0; i<m_nParticles; ++i){
-      for(G4int i=0; i<m_nParticles; ++i){
+      //for(G4int i=0; i<nparticles; ++i){
+      for(G4int i=0; i<nparticles; ++i){
 	x_rand = G4RandGauss::shoot(0,m_sigma);
 	y_rand = G4RandGauss::shoot(0,m_sigma);
 	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
@@ -114,7 +133,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       G4double y_rand  = 0;
       G4double x_sign  = 1;
       G4double y_sign  = 1;
-      for(G4int i=0; i<m_nParticles; ++i){
+      for(G4int i=0; i<nparticles; ++i){
 	
 	x_rand = 999;
 	y_rand = 999;
@@ -144,7 +163,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     else{
       
       G4ThreeVector startPos = G4ThreeVector(0*mm,0*mm,0*mm);
-      for(G4int i=0; i<m_nParticles; ++i){
+      for(G4int i=0; i<nparticles; ++i){
 	particleGun->SetParticlePosition(startPos);
 	particleGun->SetParticleTime(tstart);
 	particleGun->GeneratePrimaryVertex(anEvent);

@@ -16,6 +16,7 @@
 #include "SteppingAction.hh"
 #include "SteppingVerbose.hh"
 #include "TrackingAction.hh"
+#include "BeamProfile.hh"
 //#include "MyTreeWriter.hh"
 
 #include "SetupAntenna.hh"
@@ -70,6 +71,8 @@ void help()
   cout << "\t Create N bunches" << endl;
   cout << "--offset <float>" << endl;
   cout << "\t Timing offset for bunches (default 0.35 ns)"<<endl;
+  cout << "--beam <file.txt> " << endl;
+  cout << "\t Input beam profile file" << endl;
   cout << "------------------------------------------------------------" << endl;
   cout << endl;
   cout << endl;
@@ -99,6 +102,7 @@ int main(int argc, char** argv)
   G4double sigma         = 0;
   G4int nbunches         = 1;
   G4double tOffset       = 0.350;
+  std::string beamFile   = "";
 
   // Options
   for(int i=1; i<argc; ++i){
@@ -130,8 +134,8 @@ int main(int argc, char** argv)
       nbunches = atoi( argv[++i] );
     else if( strcmp(argv[i], "--offset") == 0 )
       tOffset = atof( argv[++i] );
-
-
+    else if( strcmp(argv[i], "--beam") == 0 )
+      beamFile = argv[++i];
     else{
       help();
       return 0;
@@ -179,9 +183,10 @@ int main(int argc, char** argv)
   }
 
   // Add some more info about input distribution
-  if(b_flat) ss << "_RandFlat" << sigma;
+  BeamProfile* bp = new BeamProfile();
+  if(b_flat)  ss << "_RandFlat" << sigma;
   else if(b_gauss) ss << "_RandGauss" << sigma;
-  else ss << "_singlePos";
+  else             ss << "_singlePos";
 
   //ss << "_TestingEndpointIssue";
   //ss << "_shortenedZ";
@@ -190,7 +195,22 @@ int main(int argc, char** argv)
   if(useThreshold) ss << "_thresh" << threshold << "MeV";
 
   // Add number of bunches information
-  ss << "_bunches" << nbunches;
+  if(beamFile.empty()) ss << "_bunches" << nbunches;
+  else{
+    bp->init(beamFile);
+    if( !bp->isInit() ){
+      cout<<"************************************"<<endl;
+      cout<<"Error: Beam Profile not initialized"<<endl;
+      cout<<"************************************"<<endl;
+      return 0.;
+    }
+    string s_beam = beamFile.substr(0,beamFile.find(".txt"));
+    s_beam        = s_beam.substr(beamFile.find("/")+1,-1);
+    cout<<"Loading beam: "<<s_beam<<endl;
+    ss << "_" << s_beam;
+    //nbunches = bp->getN(); 
+  }
+
 
   // Setup the Antennas
   SetupAntenna* m_AntSetup = new SetupAntenna(antFile);
@@ -241,7 +261,8 @@ int main(int argc, char** argv)
 								 partType,
 								 nParticles,
 								 b_flat, b_gauss, sigma,
-								 nbunches, tOffset);  
+								 nbunches, tOffset,
+								 bp);  
   runManager->SetUserAction(genAction);
   runManager->SetUserAction(new RunAction(detector,genAction));
   runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput,

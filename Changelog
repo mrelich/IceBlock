@@ -1,3 +1,9 @@
+2015-02-10 Matt:
+	* Adding new class BeamProfile.hh to read in text file from profile.
+	* Charge profile structure included for the beam.
+	* Data directory added for necessary data file storage
+	* Beam charge distribution added to data
+
 2015-02-09 Matt:
 	* Checked update of increasing beam width
 	* Need to incorporate beam structure in next update

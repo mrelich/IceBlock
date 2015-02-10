@@ -10,6 +10,7 @@
 #include "globals.hh"
 #include <string>
 #include "Randomize.hh"
+#include "BeamProfile.hh"
 
 #include <fstream>
 
@@ -20,7 +21,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   // Constructor / Destructor
   PrimaryGeneratorAction(DetectorConstruction*, G4float, std::string, G4int,
-			 G4bool, G4bool, G4double, G4int, G4double);
+			 G4bool, G4bool, G4double, G4int, G4double, BeamProfile*);
   ~PrimaryGeneratorAction();
 
   void GeneratePrimaries(G4Event*);
@@ -38,6 +39,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   G4int m_nbunch;      // Adding ability to add offset
   G4double m_tOffset;  // Adding offset for bunch structure
+
+  BeamProfile* m_bp;   // Beam profile
 
   //std::ofstream* f_test; // Used to get data on beam profile
 };
