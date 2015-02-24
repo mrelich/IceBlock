@@ -86,19 +86,21 @@ void SteppingAction::WriteSteps(const G4Step* aStep)
   
 
   G4Track* track = aStep->GetTrack();
-  
-  (*m_output) <<
-    x << " " <<
-    y << " " <<
-    z << " " <<
-    dX << " " <<
-    track->GetKineticEnergy() / MeV << " " <<
-    dE << " " <<
-    track->GetParticleDefinition()->GetPDGEncoding()<< " " <<
-    track->GetTrackID() << " " <<
-    track->GetParentID() << " " <<
-    ProcessID << " " <<
-    G4endl;
+
+  if( m_output ){
+    (*m_output) <<
+      x << " " <<
+      y << " " <<
+      z << " " <<
+      dX << " " <<
+      track->GetKineticEnergy() / MeV << " " <<
+      dE << " " <<
+      track->GetParticleDefinition()->GetPDGEncoding()<< " " <<
+      track->GetTrackID() << " " <<
+      track->GetParentID() << " " <<
+      ProcessID << " " <<
+      G4endl;
+  }// end if file is open
 
 }
 

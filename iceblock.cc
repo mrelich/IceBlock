@@ -1,13 +1,14 @@
 
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
-// Simple simulation to shoot particles into a block of some material.   //
-// The goal is to study shower properties in Ice, but other materials    //
-// may be used to compare with previoulsy established shower properties. //
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
+// Full Simulation using Geant4 to calculate the electric field for an //
+// EM shower in Ice.  It is to be used for the ARA TA-ELS experiment   //
+// conducted in Utah.                                                  // 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
 
+
+// Geant4 Classes
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
-
 #include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
 #include "PrimaryGeneratorAction.hh"
@@ -16,18 +17,18 @@
 #include "SteppingAction.hh"
 #include "SteppingVerbose.hh"
 #include "TrackingAction.hh"
-#include "BeamProfile.hh"
-//#include "MyTreeWriter.hh"
 
+// Some additional classes for convenience
+#include "BeamProfile.hh"
 #include "SetupAntenna.hh"
 
+// Standard
 #include <sstream>
 #include <fstream>
-//#include <ctime>
 #include "time.h"
 
 //---------------------------------------------------//
-// Help menu
+// Help menu for all the options
 //---------------------------------------------------//
 void help()
 {
@@ -87,24 +88,29 @@ int main(int argc, char** argv)
 
   // Store time
   clock_t tStart = clock();
-  
-  // Options
+
+  //============================================//
+  // List all the options here with some small
+  // description of what they are used for
+  //============================================//
   G4int nEvents          = 1;     // number of events
   G4int nParticles       = 1;     // number of particles
-  G4int beamEnergy       = 1000; // MeV
+  G4int beamEnergy       = 1000;  // beam energy
   G4int detMaterial      = 0;     // detector material
-  std::string partType   = "e-";   
-  G4double threshold     = 0;
-  bool useThreshold      = false;
-  std::string antFile    = "";
-  G4bool b_flat          = false;
-  G4bool b_gauss         = false; 
-  G4double sigma         = 0;
-  G4int nbunches         = 1;
-  G4double tOffset       = 0.350;
-  std::string beamFile   = "";
+  std::string partType   = "e-";  // primary particle
+  G4double threshold     = 0;     // energy threshold for testing -- leave 0
+  bool useThreshold      = false; // Whether or not to use this threshold -- don't
+  std::string antFile    = "";    // File path for antenna positions
+  G4bool b_flat          = false; // Use uniform beam
+  G4bool b_gauss         = false; // Use Gaussian distributed beam
+  G4double sigma         = 0;     // width of the beam
+  G4int nbunches         = 1;     // Number of bunches in beam
+  G4double tOffset       = 0.350; // Timing between bunches [ns]
+  std::string beamFile   = "";    // Beam profile from txt file
 
-  // Options
+  //============================================//
+  // Load the options
+  //============================================//
   for(int i=1; i<argc; ++i){
     if( strcmp(argv[i], "-ne") == 0 )
       nEvents = atoi( argv[++i] );
@@ -149,14 +155,21 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  // Make an output name including the run information
+  //============================================//
+  // Make an output name including the run 
+  // information. Perhaps could come up with 
+  // something better.
+  // THIS IS GETTING TOO LONG
+  //============================================//
   stringstream ss;
   ss << "output_" << nEvents << "_" << beamEnergy << "_";
 
+  // Check det material
   if(detMaterial == 1)      ss << "lead";
   else if(detMaterial == 2) ss << "iron";
   else                      ss << "ice";
 
+  // Check particle type
   if(partType == "e-")         ss << "_eBeam";    
   else if(partType == "mu-")   ss << "_muBeam";    
   else if(partType == "e+")    ss << "_pBeam";    
@@ -173,13 +186,8 @@ int main(int argc, char** argv)
     cout<<s_ant<<endl;
     ss << "_" << s_ant;
   }
-  else{
-    //ss << "_HardCodedAntenna_R1000m";
-    //ss << "_HardCodedAntenna_R7m";
-    //ss << "_HardCodedAntenna_R1000m_oldV";
+  else{ // uses a single antenna a theta_c 100m away
     ss << "_HardCodedAntenna_R100m";
-    //ss << "_HardCodedAntenna_BetaCalc";
-    //ss << "_HardCodedAntenna_R10m";
   }
 
   // Add some more info about input distribution
@@ -187,9 +195,6 @@ int main(int argc, char** argv)
   if(b_flat)  ss << "_RandFlat" << sigma;
   else if(b_gauss) ss << "_RandGauss" << sigma;
   else             ss << "_singlePos";
-
-  //ss << "_TestingEndpointIssue";
-  //ss << "_shortenedZ";
 
   // If threshold is set, append to file
   if(useThreshold) ss << "_thresh" << threshold << "MeV";
@@ -211,16 +216,14 @@ int main(int argc, char** argv)
     //nbunches = bp->getN(); 
   }
 
+  //============================================//
+  // Configure Geant Below
+  //============================================//
 
   // Setup the Antennas
   SetupAntenna* m_AntSetup = new SetupAntenna(antFile);
   std::vector<Antenna*> m_Ants = m_AntSetup->getAnts();
   
-
-  // My own stepping
-  //G4VSteppingVerbose* verboseStep = new SteppingVerbose(ss.str());
-  //G4VSteppingVerbose::SetInstance(verboseStep);
-
   // Default run manager
   G4RunManager* runManager = new G4RunManager;
 
@@ -235,8 +238,10 @@ int main(int argc, char** argv)
   runManager->SetUserInitialization(physics);
   
   // Open up a file for output
-  std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
-  std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
+  // This is not currently used anymore since we have the
+  // e-field directly calculated
+  //std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
+  //std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream APotOut(("efield/A_"+ss.str()+".dat").c_str(), std::ofstream::out);
 
   // Output some meta data info for the vector potential plots
@@ -250,12 +255,7 @@ int main(int argc, char** argv)
 	  << tOffset
 	  << G4endl;
 
-  // My output tree
-  // This seems to take too long!!
-  //MyTreeWriter* treeWriter = new MyTreeWriter("trees/test.root");
-  //MyTreeWriter* treeWriter = new MyTreeWriter(("trees/"+TString(ss.str().c_str())+".root"));
-  
-  // Set Primary action to be carried out
+  // Set Primary action generator which will inject particles
   PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(detector,
 								 beamEnergy,
 								 partType,
@@ -263,41 +263,35 @@ int main(int argc, char** argv)
 								 b_flat, b_gauss, sigma,
 								 nbunches, tOffset,
 								 bp);  
+  
   runManager->SetUserAction(genAction);
+
+  // Setup the actions to carry out  
   runManager->SetUserAction(new RunAction(detector,genAction));
-  runManager->SetUserAction(new EventAction(&trackOutput, &stepOutput,
+  runManager->SetUserAction(new EventAction(NULL,NULL, //&trackOutput, &stepOutput,
 					    &APotOut,
 					    &m_Ants));
-  runManager->SetUserAction(new SteppingAction(&stepOutput, &m_Ants));
+  runManager->SetUserAction(new SteppingAction(NULL /*&stepOutput*/, &m_Ants));
   //runManager->SetUserAction(new TrackingAction(&trackOutput));
 
   // Initialize G4 Kernel
   runManager->Initialize();
 
-  // Get the pointer to the UI manager and set verbosities
-  //G4UImanager* UI = G4UImanager::GetUIpointer();
-  //UI->ApplyCommand("/run/verbose 1");
-  //UI->ApplyCommand("/event/verbose 1");
-  //UI->ApplyCommand("/tracking/verbose 1");
-
   // Start the run
   runManager->BeamOn(nEvents);
 
-  // Write tree and end
-  //treeWriter->Finalize();
-  //delete treeWriter;
-
-  trackOutput.close();
-  stepOutput.close();
+  // Close up the files
+  //trackOutput.close();
+  //stepOutput.close();
   APotOut.close();
     
-
-  delete runManager;
+  // Dump some info
   cout<<"Number of particles "<<nParticles<<endl;
   cout<<"Runtime is: "<<(double)(clock() - tStart)/CLOCKS_PER_SEC<<" seconds "<<endl;
 
+  // Clean up and finish
   delete m_AntSetup;
-
+  delete runManager;
   return 0;
 
 }

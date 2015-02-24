@@ -1,3 +1,6 @@
+2015-02-24 Matt:
+	* Trying to clean up a little.  First round done.
+
 2015-02-10 Matt:
 	* Adding new class BeamProfile.hh to read in text file from profile.
 	* Charge profile structure included for the beam.
