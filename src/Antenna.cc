@@ -29,6 +29,11 @@ Antenna::Antenna(G4double x, G4double y, G4double z,
   m_Ay = std::vector<G4double> (m_nPoints, 0.);
   m_Az = std::vector<G4double> (m_nPoints, 0.);
 
+  // Initialize the vector for efield
+  m_Ex = std::vector<G4double> (m_nPoints, 0.);
+  m_Ey = std::vector<G4double> (m_nPoints, 0.);
+  m_Ez = std::vector<G4double> (m_nPoints, 0.);
+
 }
 
 //--------------------------------------------------//
@@ -92,6 +97,47 @@ void Antenna::getPoint(unsigned int i,
 
 }
 
+//--------------------------------------------------//
+// Add a point
+//--------------------------------------------------//
+void Antenna::addEPoint(unsigned int ip,
+			G4double Ex,
+			G4double Ey,
+			G4double Ez)
+{
+
+  // Add the point to the list
+  m_Ex[ip] += Ex;
+  m_Ey[ip] += Ey;
+  m_Ez[ip] += Ez;
+
+}
+
+//--------------------------------------------------//
+// Accessor for points
+//--------------------------------------------------//
+void Antenna::getEPoint(unsigned int i,
+			G4double &time,
+			G4double &Ex,
+			G4double &Ey,
+			G4double &Ez)
+{
+
+  if( i >= m_Ex.size() ){
+    G4cout<<"*** ERROR: Trying to access a point "
+	 <<"that is outside range."<<G4endl;
+    G4cout<<"Setting vector potential to 0."<<G4endl;
+    Ex = Ey = Ez = time = 0;
+    return;
+  }
+
+  Ex = m_Ex[i];
+  Ey = m_Ey[i];
+  Ez = m_Ez[i];
+  time = m_tStart + i*m_stepSize;
+
+}
+
 		       
 //--------------------------------------------------//
 // Clear out information
@@ -103,6 +149,12 @@ void Antenna::clear()
     m_Ax[i] = 0;
     m_Ay[i] = 0;
     m_Az[i] = 0;
+  }
+
+  for(unsigned int i=0; i<m_Ex.size(); ++i){
+    m_Ex[i] = 0;
+    m_Ey[i] = 0;
+    m_Ez[i] = 0;
   }
 
 }

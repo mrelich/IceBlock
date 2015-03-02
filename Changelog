@@ -1,3 +1,9 @@
+2015-03-02 Matt:
+	* Adding Constants.hh
+	* Adding new output for Efield from Endpoint
+	* Adding Endpoint formalism to SteppingAction
+	* Adding way to writeout E-field information to EventAction
+
 2015-02-24 Matt:
 	* Trying to clean up a little.  First round done.
 

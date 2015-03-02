@@ -1,5 +1,6 @@
 
 #include "SteppingAction.hh"
+#include "Constants.hh"
 
 //-----------------------------------------------------------------//
 // Constructor
@@ -36,6 +37,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   //WriteSteps(aStep);
   VPotentialZHSStyle(aStep);
   //VPotentialEndpoint(aStep);
+  EFieldEndpointStyle(aStep);
+
 }
 
 //-----------------------------------------------------------------//
@@ -110,23 +113,24 @@ void SteppingAction::WriteSteps(const G4Step* aStep)
 void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
 {
 
+  // In order to get the material the pre/post-step points are in
+  // one can use either GetPhysicalVolume() or GetMaterial()
+  // This can then be used to assign index of refraction.
+
   // For now, only count electrons and positrons
   G4Track* track = aStep->GetTrack();
   if( abs(track->GetParticleDefinition()->GetPDGEncoding()) != 11) return;
-
-  // Placing a 1 MeV Energy threhold
-  //if( aStep->GetPostStepPoint()->GetTotalEnergy()/MeV < 1 ) return;
 
   // Working in SI Units throughout in order to try to remove
   // any unit conversion errors.
   
   // Specify some constans... Consider moving these to some
   // file that is more easily changed among all scripts
-  const G4double m_c  = 2.99792458e8;
-  const G4double m_n  = 1.78;      // index of refraction for ice
-  const G4double m_pi = 3.141592653589;
-  const G4double m_mu = 4*m_pi*1e-7;      // permeability
-  const G4double m_e  = 1.602e-19; // electric charge 
+  //const G4double m_c  = 2.99792458e8;
+  //const G4double m_n  = 1.78;           // index of refraction for ice
+  //const G4double m_pi = 3.141592653589;
+  //const G4double m_mu = 4*m_pi*1e-7;    // permeability
+  //const G4double m_e  = 1.602e-19;      // electric charge 
 
 
 
@@ -247,7 +251,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     // by a few limiting cases.  One of the parameters needed is
     // the time derivative of the t_detector
     G4double dtD_dt     = fabs(1. - (m_n/m_c)*(V.dot(u)));
-    G4double dtD_dt_min = 1.e-15; // taken from Anne and ZHS code
+    G4double dtD_dt_min = m_tolerance; //1.e-15; // taken from Anne and ZHS code
 
     G4double factor = 1.;
 
@@ -352,13 +356,13 @@ G4ThreeVector SteppingAction::getVelocity(G4ThreeVector P0,
 // Set the unit vector and distance from mid-point to antenna
 //-----------------------------------------------------------------//
 void SteppingAction::setUnitVector(G4ThreeVector v_ant,
-				   G4ThreeVector v_midPoint,
+				   G4ThreeVector v_Point,
 				   G4ThreeVector &u,
 				   G4double &R)
 {
 
   // Set the vector from midpoint to antenna
-  u = v_ant - v_midPoint;
+  u = v_ant - v_Point;
 
   // Take R from the vector
   R = u.mag();
@@ -369,3 +373,133 @@ void SteppingAction::setUnitVector(G4ThreeVector v_ant,
 
 }
 
+//-----------------------------------------------------------------//
+// Get the Efield from Endpoint method
+//-----------------------------------------------------------------//
+void SteppingAction::EFieldEndpointStyle(const G4Step* aStep)
+{
+
+  // For convenince later
+  G4StepPoint* prestep  = aStep->GetPreStepPoint();
+  G4StepPoint* poststep = aStep->GetPostStepPoint();
+  G4Track* track = aStep->GetTrack();
+
+  // only follow electrons
+  if( abs(track->GetParticleDefinition()->GetPDGEncoding()) != 11) return;
+
+  // Get time step for this track
+  G4double dtstep = (poststep->GetGlobalTime() - prestep->GetGlobalTime()) / s;
+  G4ThreeVector dxstep = (poststep->GetPosition() - prestep->GetPosition())/m;
+  if(dxstep.mag() == 0 || dtstep == 0) return;
+
+  G4ThreeVector V = dxstep / dtstep;
+
+  fillEFieldEndpoint(prestep,track,dtstep, true, V);
+  fillEFieldEndpoint(poststep,track,dtstep, false, V);
+
+}
+
+//-----------------------------------------------------------------//
+// Calculate the field for single endpoint
+//-----------------------------------------------------------------//
+void SteppingAction::fillEFieldEndpoint(G4StepPoint* point,
+					G4Track* track,
+					G4double dt,
+					G4bool isFirstPoint,
+					G4ThreeVector V)
+{
+  
+  // Get the velocity vector 
+  //G4ThreeVector V = point->GetMomentumDirection() * point->GetVelocity() / (m/s); // in m/s
+
+  // For convenince 
+  G4ThreeVector P = point->GetPosition() / m;   // in meters
+  G4double t      = point->GetGlobalTime() / s; // in seconds
+
+  
+  // Loop over the antennas and calculate the field 
+  // recieved at each antenna.
+  for(unsigned int iA=0; iA<m_ants->size(); ++iA){
+    Antenna* ant = m_ants->at(iA);
+    
+    // Antenna Position
+    G4ThreeVector AntPos = G4ThreeVector( ant->getX(),
+					  ant->getY(),
+					  ant->getZ() );
+    
+    // Get R and unit vector
+    G4double R      = 0;
+    G4ThreeVector u = G4ThreeVector();
+    setUnitVector(AntPos, P, u, R);
+
+    // Get the retarded time
+    G4double tD = getTDetector(AntPos, P, t, m_n, m_c);
+
+    // Get the charge
+    G4double charge = m_e * track->GetParticleDefinition()->GetPDGCharge();
+
+    // Locate what bin our particle falls in
+    // Load the antenna timing information
+    G4double AntTmin  = ant->getTmin() * 1e-9;  // in seconds
+    G4double AntTstep = ant->getTStep() * 1e-9; // in seconds
+    G4int ibin        = int( (tD - AntTmin)/AntTstep );
+
+
+    // Now we can get the Efield
+    G4ThreeVector Efield = getEFieldEndpoint(V,u,R,AntTstep,charge);
+    
+    // Check the sign
+    if( !isFirstPoint ) Efield *= -1;
+    
+    G4cout<<"--------------------------------------"<<G4endl;
+    G4cout<<"ibin: "<<ibin<<" time: "<<tD<<G4endl;
+    G4cout<<Efield<<G4endl;
+    
+    // Store the information here
+    ant->addEPoint(ibin, Efield.x(), Efield.y(), Efield.z());
+		   
+  }// end loop over antennas
+
+}
+
+//-----------------------------------------------------------------//
+// Calculate the efield using equation 8 from end-point
+//-----------------------------------------------------------------//
+G4ThreeVector SteppingAction::getEFieldEndpoint(G4ThreeVector V,
+						G4ThreeVector rhat,
+						G4double R,
+						G4double dt,
+						G4double q)
+{
+
+  // Get easy constant terms
+  G4double C = q/(dt*m_c*R);
+  
+  // Get the numerator information
+  G4ThreeVector num = rhat.cross(rhat.cross(V)) / m_c;
+  
+  // Get the denominator information
+  G4double den = 1-(m_n/m_c)*V.dot(rhat);
+  
+  // Add some protections
+  if( fabs(den) < m_tolerance ){
+    G4cout<<"Below tolerance: "<<den<<G4endl;
+    den = m_tolerance;
+  }
+
+  
+  // Dump some information
+  if(false){
+    G4cout<<"---------------------------------------------"<<G4endl;
+    G4cout<<"dt:  "<<dt<<G4endl;
+    G4cout<<"q:   "<<q<<G4endl;
+    G4cout<<"R:   "<<R<<G4endl;
+    G4cout<<"V:   "<<V<<" "<<V.mag()<<G4endl;
+    G4cout<<"den: "<<den<<G4endl;
+    G4cout<<"C:   "<<C<<G4endl;
+    G4cout<<"Tot: "<<C * num / den<<G4endl;
+  }
+
+  return C * num / den;
+  
+}

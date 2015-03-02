@@ -243,6 +243,7 @@ int main(int argc, char** argv)
   //std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
   //std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream APotOut(("efield/A_"+ss.str()+".dat").c_str(), std::ofstream::out);
+  std::ofstream EFOut(("efield/E_"+ss.str()+".dat").c_str(), std::ofstream::out);
 
   // Output some meta data info for the vector potential plots
   APotOut << "# " << nEvents << " " 
@@ -254,6 +255,16 @@ int main(int argc, char** argv)
 	  << nbunches                   << " "
 	  << tOffset
 	  << G4endl;
+
+  EFOut << "# " << nEvents << " " 
+	<< nParticles << " "
+	<< beamEnergy << " "
+	<< m_Ants.size() << " "
+	<< m_Ants.at(0)->getNPoints() << " "
+	<< m_Ants.at(0)->getTStep()   << " "
+	<< nbunches                   << " "
+	<< tOffset
+	<< G4endl;
 
   // Set Primary action generator which will inject particles
   PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(detector,
@@ -270,6 +281,7 @@ int main(int argc, char** argv)
   runManager->SetUserAction(new RunAction(detector,genAction));
   runManager->SetUserAction(new EventAction(NULL,NULL, //&trackOutput, &stepOutput,
 					    &APotOut,
+					    &EFOut,
 					    &m_Ants));
   runManager->SetUserAction(new SteppingAction(NULL /*&stepOutput*/, &m_Ants));
   //runManager->SetUserAction(new TrackingAction(&trackOutput));
@@ -284,6 +296,7 @@ int main(int argc, char** argv)
   //trackOutput.close();
   //stepOutput.close();
   APotOut.close();
+  EFOut.close();
     
   // Dump some info
   cout<<"Number of particles "<<nParticles<<endl;

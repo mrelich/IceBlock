@@ -53,6 +53,23 @@ class Antenna
 		G4double &Ay,
 		G4double &Az);
 
+  // Add Efield point
+  void addEPoint(unsigned int ip,
+		 G4double Ex,
+		 G4double Ey,
+		 G4double Ez);
+  
+  // Get Number of Efield points
+  unsigned int getEN(){ return m_Ex.size(); };
+
+  // Access the points
+  void getEPoint(unsigned int i,
+		 G4double &time,
+		 G4double &Ex,
+		 G4double &Ey,
+		 G4double &Ez);
+		
+
   // CLear out vector potential info
   void clear();
   
@@ -75,6 +92,9 @@ class Antenna
   std::vector<G4double> m_Ay; // Vector potential in Y direction
   std::vector<G4double> m_Az; // Vector potential in Z direction
 
+  std::vector<G4double> m_Ex; // Efield from endpoint in X direction
+  std::vector<G4double> m_Ey; // Efield from endpoint in Y direction
+  std::vector<G4double> m_Ez; // Efield from endpoint in Z direction
   
   
 };
