@@ -62,20 +62,13 @@ class SteppingAction : public G4UserSteppingAction
   // Testing
   G4double getBeta(const G4Step* step);
 
-  // Efield from one endpoint
-  void fillEFieldEndpoint(G4StepPoint* point,   // point in question
-			  G4Track* track,       // track pointer (maybe not necessary?)
-			  G4double dt,          // time step info
-			  G4bool isFirstPoint,  // Is first point in endpoint method
-			  G4ThreeVector V);
-
   // Calculate the e-field from paramters
   // for the endpoint method
-  G4ThreeVector getEFieldEndpoint(G4ThreeVector V,    // Velocity at step in m/s 
+  G4ThreeVector getEFieldEndpoint(G4ThreeVector Beta,  // Velocity at step [dimensionless]
 				   G4ThreeVector rhat, // unit vector towards antenna 
-				   G4double R,         // distance to antenna
-				   G4double dt,        // time-step
-				   G4double q);        // charge
+				   G4double R,         // distance to antenna [m]
+				   G4double dt,        // time-step [s]
+				   G4double q);        // charge [C]
 
 };
 #endif

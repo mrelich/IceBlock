@@ -53,6 +53,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   // Energy threshold can be imposed
   G4double m_threshold;
   bool m_useThreshold;
+
+  // User Limit
+  G4UserLimits* m_stepLimit;
   
 };
 

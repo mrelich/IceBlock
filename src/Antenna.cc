@@ -65,6 +65,8 @@ void Antenna::addPoint(unsigned int ip,
 		       G4double Az)
 {
 
+  if(ip >= m_Ax.size()) return;
+
   // Add the point to the list
   m_Ax[ip] += Ax;
   m_Ay[ip] += Ay;
@@ -106,6 +108,9 @@ void Antenna::addEPoint(unsigned int ip,
 			G4double Ez)
 {
 
+  //G4cout<<"Adding: "<<ip<<" "<<Ex<<" "<<Ey<<" "<<Ez<<" "<<m_Ex.size()<<G4endl;
+  if(ip >= m_Ex.size()) return;  
+
   // Add the point to the list
   m_Ex[ip] += Ex;
   m_Ey[ip] += Ey;
@@ -134,7 +139,7 @@ void Antenna::getEPoint(unsigned int i,
   Ex = m_Ex[i];
   Ey = m_Ey[i];
   Ez = m_Ez[i];
-  time = m_tStart + i*m_stepSize;
+  time = m_tStart + i*m_stepSize + m_stepSize/2.;
 
 }
 

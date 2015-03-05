@@ -36,7 +36,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 
   //WriteSteps(aStep);
   VPotentialZHSStyle(aStep);
-  //VPotentialEndpoint(aStep);
   EFieldEndpointStyle(aStep);
 
 }
@@ -310,7 +309,7 @@ G4double SteppingAction::getTDetector(G4ThreeVector ant,
 
   //G4cout<<"\t\tGetting time: "<<time<<" "<<(n_/c_)
   //<<" "<<(ant - point).mag()<<" final result: "
-  //<<(time + (n_/c_) * (ant - point).mag())<<G4endl;
+  // <<(time + (n_/c_) * (ant - point).mag())<<G4endl;
 
   return time + (n_/c_) * (ant - point).mag();
 
@@ -380,43 +379,39 @@ void SteppingAction::EFieldEndpointStyle(const G4Step* aStep)
 {
 
   // For convenince later
-  G4StepPoint* prestep  = aStep->GetPreStepPoint();
-  G4StepPoint* poststep = aStep->GetPostStepPoint();
+  //G4StepPoint* prestep  = aStep->GetPreStepPoint();
+  //G4StepPoint* poststep = aStep->GetPostStepPoint();
   G4Track* track = aStep->GetTrack();
 
   // only follow electrons
   if( abs(track->GetParticleDefinition()->GetPDGEncoding()) != 11) return;
 
-  // Get time step for this track
-  G4double dtstep = (poststep->GetGlobalTime() - prestep->GetGlobalTime()) / s;
-  G4ThreeVector dxstep = (poststep->GetPosition() - prestep->GetPosition())/m;
-  if(dxstep.mag() == 0 || dtstep == 0) return;
+  // Alternative calculation for velocity
+  // This will use average velocity between steps. Much better
+  // than taking pre and post step position and time where we 
+  // can have speeds greater than light in vacuum due to neglecting
+  // acceleration.
+  G4ThreeVector P0   = aStep->GetPreStepPoint()->GetPosition()    / m;
+  G4double      t0   = aStep->GetPreStepPoint()->GetGlobalTime()  / s;
 
-  G4ThreeVector V = dxstep / dtstep;
+  G4double      Vi   = (aStep->GetPreStepPoint()->GetVelocity() +
+			aStep->GetPostStepPoint()->GetVelocity())/ (m/s);
+  Vi = Vi/2.;
+  G4ThreeVector post = aStep->GetPostStepPoint()->GetPosition()    / m;
+  G4ThreeVector uv   = (post-P0)/(post-P0).mag();
 
-  fillEFieldEndpoint(prestep,track,dtstep, true, V);
-  fillEFieldEndpoint(poststep,track,dtstep, false, V);
+  G4double      t1   = aStep->GetPostStepPoint()->GetGlobalTime()  / s;
+  G4ThreeVector P1   = P0 + uv * Vi * (t1-t0);
 
-}
 
-//-----------------------------------------------------------------//
-// Calculate the field for single endpoint
-//-----------------------------------------------------------------//
-void SteppingAction::fillEFieldEndpoint(G4StepPoint* point,
-					G4Track* track,
-					G4double dt,
-					G4bool isFirstPoint,
-					G4ThreeVector V)
-{
-  
-  // Get the velocity vector 
-  //G4ThreeVector V = point->GetMomentumDirection() * point->GetVelocity() / (m/s); // in m/s
 
-  // For convenince 
-  G4ThreeVector P = point->GetPosition() / m;   // in meters
-  G4double t      = point->GetGlobalTime() / s; // in seconds
+  // If track length or time are same do not use this track
+  if( (P0-P1).mag() == 0 ) return;
+  if(t1 == t0)             return;
 
-  
+  // Set Beta
+  G4ThreeVector Beta = getVelocity(P0,P1,t0,t1) / m_c;
+
   // Loop over the antennas and calculate the field 
   // recieved at each antenna.
   for(unsigned int iA=0; iA<m_ants->size(); ++iA){
@@ -427,36 +422,53 @@ void SteppingAction::fillEFieldEndpoint(G4StepPoint* point,
 					  ant->getY(),
 					  ant->getZ() );
     
-    // Get R and unit vector
-    G4double R      = 0;
-    G4ThreeVector u = G4ThreeVector();
-    setUnitVector(AntPos, P, u, R);
+    // Get Rs and unit vectors
+    G4double R0 = 0, R1 = 0;
+    G4ThreeVector u0 = G4ThreeVector(), u1 = G4ThreeVector();
+    setUnitVector(AntPos, P0, u0, R0);
+    setUnitVector(AntPos, P1, u1, R1);
 
-    // Get the retarded time
-    G4double tD = getTDetector(AntPos, P, t, m_n, m_c);
+    // Get the times at antenna
+    G4double tD0 = getTDetector(AntPos,P0,t0,m_n,m_c);
+    G4double tD1 = getTDetector(AntPos,P1,t1,m_n,m_c);
+    G4double dt  = fabs(tD0-tD1);
 
     // Get the charge
     G4double charge = m_e * track->GetParticleDefinition()->GetPDGCharge();
+    //G4double charge = m_e * (-1)*track->GetParticleDefinition()->GetPDGCharge();
 
-    // Locate what bin our particle falls in
-    // Load the antenna timing information
-    G4double AntTmin  = ant->getTmin() * 1e-9;  // in seconds
-    G4double AntTstep = ant->getTStep() * 1e-9; // in seconds
-    G4int ibin        = int( (tD - AntTmin)/AntTstep );
+    // Locate what bin our particle falls into, but
+    // remember that for e-field the antenna is 0.5*step 
+    // forward.
+    G4double AntTstep = ant->getTStep() * 1e-9;               // in seconds
+    G4double AntTmin  = (ant->getTmin()+AntTstep/2.) * 1e-9;  // in seconds
+    G4int ibin0       = int( (tD0 - AntTmin)/AntTstep );
+    G4int ibin1       = int( (tD1 - AntTmin)/AntTstep );
 
+    // Get the Efields
+    G4ThreeVector E0 = getEFieldEndpoint(Beta,u0,R0,dt,charge);
+    G4ThreeVector E1 = -1*getEFieldEndpoint(Beta,u1,R1,dt,charge);
+    //G4ThreeVector E0 = getEFieldEndpoint(Beta,u0,R0,AntTstep,charge);
+    //G4ThreeVector E1 = -1*getEFieldEndpoint(Beta,u1,R1,AntTstep,charge);
 
-    // Now we can get the Efield
-    G4ThreeVector Efield = getEFieldEndpoint(V,u,R,AntTstep,charge);
-    
-    // Check the sign
-    if( !isFirstPoint ) Efield *= -1;
-    
-    G4cout<<"--------------------------------------"<<G4endl;
-    G4cout<<"ibin: "<<ibin<<" time: "<<tD<<G4endl;
-    G4cout<<Efield<<G4endl;
-    
     // Store the information here
-    ant->addEPoint(ibin, Efield.x(), Efield.y(), Efield.z());
+    // I think this should only work if we limit the step size
+    // Step size limited in DetectorConstruction to something [mm]
+    // Does this work? or does the binning need to be more complicated
+    // like it was for ZHS??
+    ant->addEPoint(ibin0, E0.x(), E0.y(), E0.z());
+    ant->addEPoint(ibin1, E1.x(), E1.y(), E1.z());
+    
+
+    //G4cout<<"Is first: "<<isFirstPoint<<G4endl;
+    //G4cout<<"bin:      "<<ibin<<" time: "<<t<<" ret t: "<<tD<<G4endl;
+    //G4cout<<Efield.z()<<G4endl;
+    //G4cout<<"Ant bin:  "<<AntTstep<<G4endl;
+    //G4cout<<"Ant Tmin: "<<AntTmin<<" "<<tD-AntTmin<<G4endl;
+
+    if(false && dt > AntTstep){
+      G4cout<<"Somehow have larger step? "<<dt<<" "<<AntTstep<<G4endl;
+    }
 		   
   }// end loop over antennas
 
@@ -465,7 +477,7 @@ void SteppingAction::fillEFieldEndpoint(G4StepPoint* point,
 //-----------------------------------------------------------------//
 // Calculate the efield using equation 8 from end-point
 //-----------------------------------------------------------------//
-G4ThreeVector SteppingAction::getEFieldEndpoint(G4ThreeVector V,
+G4ThreeVector SteppingAction::getEFieldEndpoint(G4ThreeVector Beta,
 						G4ThreeVector rhat,
 						G4double R,
 						G4double dt,
@@ -473,13 +485,13 @@ G4ThreeVector SteppingAction::getEFieldEndpoint(G4ThreeVector V,
 {
 
   // Get easy constant terms
-  G4double C = q/(dt*m_c*R);
+  G4double C = q/(dt*R*m_c);
   
   // Get the numerator information
-  G4ThreeVector num = rhat.cross(rhat.cross(V)) / m_c;
+  G4ThreeVector num = rhat.cross(rhat.cross(Beta));
   
   // Get the denominator information
-  G4double den = 1-(m_n/m_c)*V.dot(rhat);
+  G4double den = 1-m_n*Beta.dot(rhat);
   
   // Add some protections
   if( fabs(den) < m_tolerance ){
@@ -491,13 +503,13 @@ G4ThreeVector SteppingAction::getEFieldEndpoint(G4ThreeVector V,
   // Dump some information
   if(false){
     G4cout<<"---------------------------------------------"<<G4endl;
-    G4cout<<"dt:  "<<dt<<G4endl;
-    G4cout<<"q:   "<<q<<G4endl;
-    G4cout<<"R:   "<<R<<G4endl;
-    G4cout<<"V:   "<<V<<" "<<V.mag()<<G4endl;
-    G4cout<<"den: "<<den<<G4endl;
-    G4cout<<"C:   "<<C<<G4endl;
-    G4cout<<"Tot: "<<C * num / den<<G4endl;
+    G4cout<<"dt:   "<<dt<<G4endl;
+    G4cout<<"q:    "<<q<<G4endl;
+    G4cout<<"R:    "<<R<<G4endl;
+    G4cout<<"Beta: "<<Beta<<" "<<Beta.mag()<<G4endl;
+    G4cout<<"den:  "<<den<<G4endl;
+    G4cout<<"C:    "<<C<<G4endl;
+    G4cout<<"Tot:  "<<C * num / den<<G4endl;
   }
 
   return C * num / den;

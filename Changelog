@@ -1,3 +1,7 @@
+2015-03-05 Matt:
+	* Updating endpoint formalism with a few fixes.
+	* No agreement between ZHS and Endpoint yet. Endpoint seems broken somehow... Timing off?
+
 2015-03-02 Matt:
 	* Adding Constants.hh
 	* Adding new output for Efield from Endpoint

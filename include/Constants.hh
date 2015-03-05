@@ -14,4 +14,6 @@ const G4double m_e  = 1.602e-19;      // electric charge
 
 const G4double m_tolerance = 1e-15;
 
+const G4double m_CGS_to_SI_q = 3.336e-10; // esu to Coulomb
+const G4double m_CGS_to_SI_c = 1e-2;       // cm to m
 #endif

@@ -105,7 +105,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4double tstart  = nb * m_tOffset * ns;
     G4int nparticles = (m_bp->isInit() ? m_bp->getQRatio(nb) : 1. ) * m_nParticles;
     
-    G4cout<<"Bunch: "<<nb<<" npart: "<<nparticles<<G4endl;
+    //G4cout<<"Bunch: "<<nb<<" npart: "<<nparticles<<G4endl;
     
     // Gaussian
     if( m_gauss ){

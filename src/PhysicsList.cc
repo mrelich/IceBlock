@@ -220,8 +220,8 @@ void PhysicsList::ConstructEM()
   while( (*theParticleIterator)() ){
     G4ParticleDefinition* particle = theParticleIterator->value();        
     G4String particleName = particle->GetParticleName();
-    //G4ProcessManager* pmanager = particle->GetProcessManager();
-    //pmanager->AddDiscreteProcess(new G4StepLimiter);
+    G4ProcessManager* pmanager = particle->GetProcessManager();
+    pmanager->AddDiscreteProcess(new G4StepLimiter);
     //ph->RegisterProcess(new G4UserSpecialCuts(), particle);
 
     // Gamma

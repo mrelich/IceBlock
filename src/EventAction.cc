@@ -130,7 +130,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       // Save E-field points
       unsigned int nEP = ant->getEN();
       for(unsigned int ip=0; ip<nEP; ++ip){
-	ant->getPoint(ip,time,Ex,Ey,Ez);
+	ant->getEPoint(ip,time,Ex,Ey,Ez);
 	
 	(*m_EFOut) << "\t" 
 		   << time << " "

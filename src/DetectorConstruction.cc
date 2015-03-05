@@ -14,7 +14,8 @@ DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh, bool 
   m_detMaterial(0),
   m_material(NULL),
   m_threshold(0),
-  m_useThreshold(false)
+  m_useThreshold(false),
+  m_stepLimit(NULL)
 {
 
   // Set detector material
@@ -152,10 +153,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 				      false,                         // no boolean operator
 				      0);                            // copy number
   
+
+  //
+  // Set user limits for step size
+  //
+  if(true){
+    G4double maxStep = 0.5*mm; // 1*mm; //1*cm;
+    m_stepLimit = new G4UserLimits(maxStep);
+    m_iceblock_log->SetUserLimits(m_stepLimit);
+    m_world_log->SetUserLimits(m_stepLimit);
+  }
   
   //
   // Return the physical world volume
-  //
+  //  
 
   return m_world_phys;
 
