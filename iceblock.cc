@@ -74,6 +74,8 @@ void help()
   cout << "\t Timing offset for bunches (default 0.35 ns)"<<endl;
   cout << "--beam <file.txt> " << endl;
   cout << "\t Input beam profile file" << endl;
+  cout << "--stepLimit <int> " << endl;
+  cout << "\t Input step limit in mm (default is -1, off)" << endl;
   cout << "------------------------------------------------------------" << endl;
   cout << endl;
   cout << endl;
@@ -107,6 +109,7 @@ int main(int argc, char** argv)
   G4int nbunches         = 1;     // Number of bunches in beam
   G4double tOffset       = 0.350; // Timing between bunches [ns]
   std::string beamFile   = "";    // Beam profile from txt file
+  G4double stepLimit     = -1;    // Beam step limit
 
   //============================================//
   // Load the options
@@ -142,6 +145,8 @@ int main(int argc, char** argv)
       tOffset = atof( argv[++i] );
     else if( strcmp(argv[i], "--beam") == 0 )
       beamFile = argv[++i];
+    else if( strcmp(argv[i], "--stepLimit") == 0)
+      stepLimit = atof( argv[++i] );
     else{
       help();
       return 0;
@@ -216,6 +221,11 @@ int main(int argc, char** argv)
     //nbunches = bp->getN(); 
   }
 
+  // Add beam information
+  cout<<"Step limit: "<<stepLimit<<endl;
+  if( stepLimit > 0 ){
+    ss << "_steplimit" << stepLimit; 
+  }
   //============================================//
   // Configure Geant Below
   //============================================//
@@ -230,7 +240,8 @@ int main(int argc, char** argv)
   // Construct detector
   DetectorConstruction* detector = new DetectorConstruction(detMaterial,
 							    threshold,
-							    useThreshold);
+							    useThreshold,
+							    stepLimit);
   runManager->SetUserInitialization(detector);
 
   // Set Physics list

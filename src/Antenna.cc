@@ -139,7 +139,7 @@ void Antenna::getEPoint(unsigned int i,
   Ex = m_Ex[i];
   Ey = m_Ey[i];
   Ez = m_Ez[i];
-  time = m_tStart + i*m_stepSize + m_stepSize/2.;
+  time = m_tStart + i*m_stepSize;
 
 }
 

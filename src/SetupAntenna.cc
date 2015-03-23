@@ -31,8 +31,8 @@ SetupAntenna::SetupAntenna(std::string infile)
   std::vector<G4double> angles;
   //angles.push_back(54.4);
   //angles.push_back(54.5);
-  //angles.push_back(55.829616);
-  angles.push_back(55);
+  angles.push_back(55.829616);
+  //angles.push_back(55);
   /*angles.push_back(54.6);
   angles.push_back(54.7);
   angles.push_back(54.8);

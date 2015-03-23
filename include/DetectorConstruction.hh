@@ -29,7 +29,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
  public:
   
-  DetectorConstruction(G4int detMaterial, G4double EThresh, bool useThresh);
+  DetectorConstruction(G4int detMaterial, G4double EThresh, 
+		       bool useThresh, G4double stepLimit);
   ~DetectorConstruction();
 
   G4VPhysicalVolume* Construct();
@@ -56,6 +57,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
   // User Limit
   G4UserLimits* m_stepLimit;
+  G4double      m_stepLimitValue;
   
 };
 

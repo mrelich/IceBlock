@@ -64,11 +64,11 @@ class SteppingAction : public G4UserSteppingAction
 
   // Calculate the e-field from paramters
   // for the endpoint method
-  G4ThreeVector getEFieldEndpoint(G4ThreeVector Beta,  // Velocity at step [dimensionless]
-				   G4ThreeVector rhat, // unit vector towards antenna 
-				   G4double R,         // distance to antenna [m]
-				   G4double dt,        // time-step [s]
-				   G4double q);        // charge [C]
-
+  G4ThreeVector getEFieldEndpoint(G4ThreeVector Beta, // Velocity at step [dimensionless]
+				  G4ThreeVector rhat, // unit vector towards antenna 
+				  G4double R,         // distance to antenna [cm]
+				  G4double dt,        // time-step [s]
+				  G4double q,         // charge [esu]
+				  G4double c);        // Speed of light [cm/s]
 };
 #endif
