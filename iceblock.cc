@@ -329,7 +329,7 @@ int main(int argc, char** argv)
 
   // Close up the files
   //trackOutput.close();
-  //stepOutput.close();
+  stepOutput.close();
   APotOut.close();
   EFOut.close();
     
