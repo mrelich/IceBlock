@@ -86,7 +86,7 @@ void setAtt(TH2F* &h, TString xtitle,
   h->SetStats(0);
   h->SetTitle("");
   h->GetYaxis()->SetTitleOffset(1.5);
-  
+  //h->SetLineWidth(2);
 }	    
 
 

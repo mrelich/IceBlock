@@ -9,6 +9,7 @@
 //#include "MyTreeWriter.hh"
 #include <fstream>
 #include "Antenna.hh"
+#include "RefractionTool.hh"
 
 class SteppingAction : public G4UserSteppingAction
 {
@@ -17,7 +18,8 @@ class SteppingAction : public G4UserSteppingAction
 
   // Constructor / Destructor
   SteppingAction(std::ofstream* output,
-		 std::vector<Antenna*> *ants);
+		 std::vector<Antenna*> *ants,
+  		 RefractionTool *refTool = NULL);
   ~SteppingAction();
   
   // User Stepping action. This constrols
@@ -32,6 +34,12 @@ class SteppingAction : public G4UserSteppingAction
 
   // Write the Efield from Endpoint
   void EFieldEndpointStyle(const G4Step*);
+
+  // Find the intersection point on the surface
+  // of the iceblock for a specific Antenna
+  //G4ThreeVector FindIntersection(G4ThreeVector antPos,      // Antenna position
+  //				 G4ThreeVector midPoint,    // Mid-point of the track
+  //				 G4PhysicalVolume* volume); // IceBlock volume
 
  private:
 
@@ -70,5 +78,9 @@ class SteppingAction : public G4UserSteppingAction
 				  G4double dt,        // time-step [s]
 				  G4double q,         // charge [esu]
 				  G4double c);        // Speed of light [cm/s]
+
+  // Tool for handling refraction
+  RefractionTool* m_refTool;
+
 };
 #endif

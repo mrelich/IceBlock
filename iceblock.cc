@@ -1,4 +1,5 @@
 
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
 // Full Simulation using Geant4 to calculate the electric field for an //
 // EM shower in Ice.  It is to be used for the ARA TA-ELS experiment   //
@@ -21,6 +22,7 @@
 // Some additional classes for convenience
 #include "BeamProfile.hh"
 #include "SetupAntenna.hh"
+#include "RefractionTool.hh"
 
 // Standard
 #include <sstream>
@@ -76,6 +78,8 @@ void help()
   cout << "\t Input beam profile file" << endl;
   cout << "--stepLimit <int> " << endl;
   cout << "\t Input step limit in mm (default is -1, off)" << endl;
+  cout << "--refraction" << endl;
+  cout << "\t Turn on refraction in the ice" << endl;
   cout << "------------------------------------------------------------" << endl;
   cout << endl;
   cout << endl;
@@ -110,6 +114,7 @@ int main(int argc, char** argv)
   G4double tOffset       = 0.350; // Timing between bunches [ns]
   std::string beamFile   = "";    // Beam profile from txt file
   G4double stepLimit     = -1;    // Beam step limit
+  G4bool useRefTool      = false; // Turn on refraction
 
   //============================================//
   // Load the options
@@ -147,6 +152,8 @@ int main(int argc, char** argv)
       beamFile = argv[++i];
     else if( strcmp(argv[i], "--stepLimit") == 0)
       stepLimit = atof( argv[++i] );
+    else if( strcmp(argv[i], "--refraction") == 0)
+      useRefTool = true;
     else{
       help();
       return 0;
@@ -226,6 +233,21 @@ int main(int argc, char** argv)
   if( stepLimit > 0 ){
     ss << "_steplimit" << stepLimit; 
   }
+  
+  // Create the refraction tool
+  RefractionTool* refTool = new RefractionTool();
+  refTool->setUse(useRefTool);
+  //ss << "_tilt45deg";
+  ss << "_tilt30deg";
+  if(useRefTool) ss << "_refractionOn";
+  //ss << "_test";
+  //ss << "_allIce";
+  //ss << "_smallIce_noTilt";
+  //ss << "_smallIce_30degTilt_pointOnPlane_DistUpdate_wFresnelCoeff";
+  //ss << "_smallIce_30degTilt_Ant46deg";
+  //ss << "_smallIce_30degTilt_pointOnPlane_fixed_nice";
+  //ss << "_smallIce_30degTilt_Antenna68deg";
+  
   //============================================//
   // Configure Geant Below
   //============================================//
@@ -241,7 +263,9 @@ int main(int argc, char** argv)
   DetectorConstruction* detector = new DetectorConstruction(detMaterial,
 							    threshold,
 							    useThreshold,
-							    stepLimit);
+							    stepLimit,
+							    refTool);
+  
   runManager->SetUserInitialization(detector);
 
   // Set Physics list
@@ -290,11 +314,11 @@ int main(int argc, char** argv)
 
   // Setup the actions to carry out  
   runManager->SetUserAction(new RunAction(detector,genAction));
-  runManager->SetUserAction(new EventAction(NULL,NULL, //&trackOutput, &stepOutput,
+  runManager->SetUserAction(new EventAction(NULL, NULL, //&trackOutput, &stepOutput,
 					    &APotOut,
 					    &EFOut,
 					    &m_Ants));
-  runManager->SetUserAction(new SteppingAction(NULL /*&stepOutput*/, &m_Ants));
+  runManager->SetUserAction(new SteppingAction(NULL /*&stepOutput*/, &m_Ants, refTool));
   //runManager->SetUserAction(new TrackingAction(&trackOutput));
 
   // Initialize G4 Kernel
@@ -316,6 +340,7 @@ int main(int argc, char** argv)
   // Clean up and finish
   delete m_AntSetup;
   delete runManager;
+  delete refTool;
   return 0;
 
 }

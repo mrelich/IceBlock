@@ -6,14 +6,17 @@
 // Constructor
 //-----------------------------------------------------------------//
 SteppingAction::SteppingAction(std::ofstream* output,
-			       std::vector<Antenna*> *ants) :
+			       std::vector<Antenna*> *ants,
+  			       RefractionTool* refTool) :
   m_output(NULL),
   //m_treeWriter(NULL)
-  m_ants(NULL)
+  m_ants(NULL),
+  m_refTool(NULL)
 {
   m_output = output;
   //m_treeWriter = treeWriter;
   m_ants = ants;
+  m_refTool = refTool;
 }
 
 //-----------------------------------------------------------------//
@@ -118,7 +121,13 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
 
   // For now, only count electrons and positrons
   G4Track* track = aStep->GetTrack();
-  if( abs(track->GetParticleDefinition()->GetPDGEncoding()) != 11) return;
+  if( abs(track->GetParticleDefinition()->GetPDGEncoding()) != 11) return;  
+  G4double n = m_nAir;
+  if( track->GetVolume()->GetName() == "iceblock_phys")
+    n = m_n;
+  else return; // for now only track in ice particles
+  
+  //G4cout << "--------------------------------------------------" << G4endl;
 
   // Working in SI Units throughout in order to try to remove
   // any unit conversion errors.
@@ -186,6 +195,20 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     G4ThreeVector AntPos = G4ThreeVector( ant->getX(),
 					  ant->getY(),
 					  ant->getZ() );
+
+    // Save a copy for now. Clean this up later
+    // but now want to test refraction quickly.
+    G4ThreeVector AntPos_save = AntPos;
+
+    // If the refraction tool has been initialized
+    // then use the tool by updating position we are
+    // calculating the field at (namely at the boundary)
+    G4double theta_i = 0; 
+    G4double theta_r = 0;
+    if( m_refTool->isInitialized() ){
+      AntPos = m_refTool->getIntPoint(Pm, AntPos, theta_i, theta_r);
+      if( theta_i < 0 || theta_r < 0) continue;
+    }
     
     // Get R and unit vector
     G4double R      = 0;
@@ -193,9 +216,17 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     setUnitVector(AntPos, Pm, u, R);
     
     // Get the detector time
-    G4double tD0 = getTDetector(AntPos, P0, t0, m_n, m_c);
-    G4double tD1 = getTDetector(AntPos, P1, t1, m_n, m_c);
-      
+    G4double tD0 = getTDetector(AntPos, P0, t0, n, m_c);
+    G4double tD1 = getTDetector(AntPos, P1, t1, n, m_c);
+
+    // Now add back the propagation time in air
+    if( m_refTool->isInitialized() ){
+      tD0 = getTDetector(AntPos_save, AntPos, tD0, m_nAir, m_c);
+      tD1 = getTDetector(AntPos_save, AntPos, tD1, m_nAir, m_c);
+      //tD0 = getTDetector(AntPos_save, AntPos, tD0, m_n, m_c);
+      //tD1 = getTDetector(AntPos_save, AntPos, tD1, m_n, m_c);
+    }
+
     //G4acout<<"tD: "<<tD0<<" "<<tD1<<" t: "<<t0<<" "<<t1<<G4endl;
 
     // Load the antenna timing information
@@ -207,7 +238,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     G4int iLastBin  = int(ant->getN() - 1);
     G4int iStart    = int( (tD0 - AntTmin)/AntTstep );
     G4int iEnd      = int( (tD1 - AntTmin)/AntTstep );
-
+    
     // Swap start times if there are issues
     // This really shouldn't happen
     if( iStart > iEnd ){
@@ -229,14 +260,50 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     //<<" first and last: "<<iFirstBin<<" "<<iLastBin<<G4endl;
 
     // Define the constant part of vector potential
+    G4double R_pa = (AntPos_save - AntPos).mag();
     G4double charge = m_e * track->GetParticleDefinition()->GetPDGCharge();
-    G4double constA = m_mu * charge / (4*m_pi*R);
+    G4double constA = m_mu * charge / (4*m_pi*(R+R_pa));
 
     // We are ready to calculate the vector potential for
     // each vector component
     G4double Ax = constA * ( V.x() - V.dot(u)*u.x() );
     G4double Ay = constA * ( V.y() - V.dot(u)*u.y() );
     G4double Az = constA * ( V.z() - V.dot(u)*u.z() );
+
+    // Now get the refracted field using fresnel's coefficients
+    // And also scale 1/R to account for distance from iceblock 
+    // surface to antenna position
+    if( m_refTool->isInitialized()){
+
+      //G4double R_pa = (AntPos_save - AntPos).mag();
+      //if(R_pa != 0){
+      //	Ax /= R_pa;
+      //Ay /= R_pa;
+      //Az /= R_pa;
+      //}
+
+      if( m_refTool->useTool()){
+	G4ThreeVector Aref = m_refTool->getTransmittedField(G4ThreeVector(Ax,Ay,Az),theta_i);
+	Ax = Aref.x();
+	Ay = Aref.y();
+	Az = Aref.z();
+      }
+    }
+
+    if( m_output ){
+      G4ThreeVector vk = G4ThreeVector(0,0,1);
+      (*m_output) << "\t" << iA
+		  <<" "<< Az
+		  <<" "<< V.angle((AntPos_save - Pm))
+		  <<" "<< V.angle((AntPos - Pm))
+		  <<" "<< Pm.x() << " " << Pm.y() << " " << Pm.z()
+		  <<" "<< AntPos.x() << " " << AntPos.y() << " " << AntPos.z()
+		  <<" "<< AntPos_save.x() << " " << AntPos_save.y() << " " << AntPos_save.z()
+		  <<" "<< vk.angle(AntPos.unit())
+		  <<" "<< vk.angle(AntPos_save.unit())
+		  <<" "<< V.x() << " " << V.y() << " " << V.z()
+		  <<G4endl;
+    }
 
     //G4cout<<"A: "<<Ax<<" "<<Ay<<" "<<Az<<G4endl;
     //G4cout<<"v: "<<V<<G4endl;
@@ -249,11 +316,11 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     // is a 'factor' that is attached to the binning determined
     // by a few limiting cases.  One of the parameters needed is
     // the time derivative of the t_detector
-    G4double dtD_dt     = fabs(1. - (m_n/m_c)*(V.dot(u)));
+    G4double dtD_dt     = fabs(1. - (n/m_c)*(V.dot(u)));
     G4double dtD_dt_min = m_tolerance; //1.e-15; // taken from Anne and ZHS code
-
+    
     G4double factor = 1.;
-
+    
     // Case 1 -- step doesn't cross bin
     if(iStart == iEnd){
       if( dtD_dt > dtD_dt_min ) factor = fabs((tD1-tD0)/AntTstep/dtD_dt);
@@ -263,7 +330,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
       ant->addPoint(iStart, Ax * factor, Ay * factor, Az * factor);
       
     }// end Case 1
-
+    
     // Case 2 -- step crosses multiple bins
     else{
       // Loop over the bins
@@ -548,3 +615,20 @@ G4ThreeVector SteppingAction::getEFieldEndpoint(G4ThreeVector Beta,
   return C * num / den;
   
 }
+
+//-----------------------------------------------------------------//
+// Find intersection point on iceblock surface
+// Right now this will only consider the top of the ice as a
+// potential route.  This can be expanded to consider sides of 
+// the ice as well.  In addition, we will take the plane wave 
+// assumption and only consider one path following Snell's law.
+//-----------------------------------------------------------------//
+//G4ThreeVector FindIntersection(G4ThreeVector antPos,
+//			       G4ThreeVector midPoint,
+//			       G4PhysicalVolume* volume)
+//{
+
+
+  
+
+//}

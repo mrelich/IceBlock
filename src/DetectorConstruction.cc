@@ -2,12 +2,14 @@
 
 #include "DetectorConstruction.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "G4RotationMatrix.hh"
 
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
 DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh, 
-					   bool useThresh, G4double stepLimit) :
+					   bool useThresh, G4double stepLimit,
+					   RefractionTool* refTool) :
   m_world_log(NULL),
   m_iceblock_log(NULL),
   m_world_phys(NULL),
@@ -17,7 +19,9 @@ DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh,
   m_threshold(0),
   m_useThreshold(false),
   m_stepLimit(NULL),
-  m_stepLimitValue(0)
+  m_stepLimitValue(0),
+  m_rotIce(NULL),
+  m_refTool(NULL)
 {
 
   // Set detector material
@@ -29,6 +33,9 @@ DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh,
  
   // Set step limit
   m_stepLimitValue = stepLimit;
+
+  // Tool for refraction to be initialized here
+  m_refTool = refTool;
 
 }
 
@@ -120,14 +127,36 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
   // Create the giant iceblock
   //
-  
-  G4double iceblock_x = 1500.0 * m;
-  G4double iceblock_y = 1500.0 * m;
-  G4double iceblock_z = 1500.0 * m;
-  //G4double iceblock_x = 100.0 * cm;
-  //G4double iceblock_y = 30.0 * cm;
-  //G4double iceblock_z = 30.0 * cm;
 
+  // Dimensions of ice at Delta
+  G4double iceblock_x = 100.0 * cm;
+  G4double iceblock_y = 30.0 * cm;
+  G4double iceblock_z = 30.0 * cm;
+  //if( !m_refTool->useTool() ){
+  //iceblock_x = 1500.0 * m;
+  //iceblock_y = 1500.0 * m;
+  //xiceblock_z = 1500.0 * m;
+  //}
+
+
+  // Set block position
+  G4ThreeVector block_pos = G4ThreeVector(0,0,iceblock_z*0.5);
+  //if( !m_refTool->useTool() ) block_pos.set(0,0,0);
+
+  // Define rotation matrix for block. Here rotate
+  // in the y-direction only.
+  //G4double tilt = 60 * m_pi / 180.;
+  //G4double tilt = 45 * m_pi / 180.;
+  G4double tilt = 30 * m_pi / 180.;
+  //G4double tilt = 0 * m_pi / 180.;
+  //G4double tilt = 60 * m_pi / 180.;
+  //if( !m_refTool->useTool() ) tilt = 0;
+  m_rotIce = new G4RotationMatrix(G4ThreeVector(cos(tilt),0,sin(tilt)),
+				  G4ThreeVector(0,1,0),
+				  G4ThreeVector(-sin(tilt),0,cos(tilt)));
+  G4cout<<"Rotation Matrix: "<<G4endl;
+  G4cout<<(*m_rotIce)<<G4endl;
+  
   // Iceblock is a box
   G4Box* iceblock_box = new G4Box("ICEBLOCK",
 				  0.5*iceblock_x,
@@ -150,15 +179,23 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   }
   
   // Physical volume
-  m_iceblock_phys = new G4PVPlacement(0,                             // no rotation
-				      G4ThreeVector(0,0,iceblock_z*0.49),
-				      m_iceblock_log,                 // its logical volume
-				      "iceblock_phys",                // name
+  m_iceblock_phys = new G4PVPlacement(m_rotIce,                      // Rotation Matrix
+				      block_pos,                     //iceblock_z*0.49),
+				      m_iceblock_log,                // its logical volume
+				      "iceblock_phys",               // name
 				      m_world_log,                   // Mother Volume
 				      false,                         // no boolean operator
 				      0);                            // copy number
   
-
+  // Initialize the refraction tool with the geometry
+  // settings of the ice
+  //if( m_refTool->useTool() )
+  m_refTool->initialize(G4ThreeVector(sin(tilt),0,cos(tilt)),
+			block_pos/1000,
+			G4ThreeVector(iceblock_x/1000,iceblock_y/1000,iceblock_z/1000),
+			m_n,
+			m_nAir);
+  
   //
   // Set user limits for step size
   //

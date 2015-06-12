@@ -11,10 +11,14 @@
 #include "G4PVPlacement.hh"
 #include "globals.hh"
 #include "G4NistManager.hh"
+#include "G4RotationMatrix.hh"
 
 #include "G4SystemOfUnits.hh"
 
 #include "G4UserLimits.hh"
+
+#include "RefractionTool.hh"
+#include "Constants.hh"
 
 enum Material
 {
@@ -30,7 +34,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
  public:
   
   DetectorConstruction(G4int detMaterial, G4double EThresh, 
-		       bool useThresh, G4double stepLimit);
+		       bool useThresh, G4double stepLimit,
+		       RefractionTool* refTool);
   ~DetectorConstruction();
 
   G4VPhysicalVolume* Construct();
@@ -58,7 +63,14 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   // User Limit
   G4UserLimits* m_stepLimit;
   G4double      m_stepLimitValue;
+
+  G4RotationMatrix* m_rotIce;
   
+  // Pointer to refraction tool
+  RefractionTool* m_refTool;
+
+  
+
 };
 
 #endif
