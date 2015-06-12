@@ -33,7 +33,7 @@ SetupAntenna::SetupAntenna(std::string infile)
   //angles.push_back(54.4);
   //angles.push_back(54.5);
   //angles.push_back(55.829616);
-  //angles.push_back(60);
+  angles.push_back(60);
   //angles.push_back(46);
   //angles.push_back(68);
   //angles.push_back(55);
@@ -77,14 +77,14 @@ SetupAntenna::SetupAntenna(std::string infile)
   */
 
   // Testing old configuration
-  G4double x = 7.30;
-  G4double z = 0;
-  R = sqrt(x*x+z*z);
-  m_ants.push_back( new Antenna(x,0,z,
-				(int) (R*sf-10),
-				2000,
-				0.02,
-				0,0,0) );
+  //G4double x = 7.30;
+  //G4double z = 0;
+  //R = sqrt(x*x+z*z);
+  //m_ants.push_back( new Antenna(x,0,z,
+  //				(int) (R*sf-10),
+  //				2000,
+  //				0.02,
+  //				0,0,0) );
 
 }
 

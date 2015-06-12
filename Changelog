@@ -5,6 +5,12 @@
 	* Compiling will give many warnings due to linking with root.
 		- Next step is to remove the ROOT dependencies. It was just easier
 		for now to check the math is ok.
+	* Compiling warnings fixed.  Root depencies removed. Testing gives compatible results
+		with Root implementaiton of rotation matrices.
+	* TODO: Clean up the code. Many commented out chunks taking up space
+		Add option to put in the rotation angle.
+		Add option to specify dimensions of ice.
+		Add option to turn on/off recording step info since it is useful for visualizing
 
 2015-03-23 Matt:
 	* committing current status for endpoint method.  Not great agreement yet.

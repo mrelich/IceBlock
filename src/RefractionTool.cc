@@ -51,18 +51,23 @@ void RefractionTool::initialize(G4ThreeVector planeNorm,
   m_n1 = index1;
 
   // Set up identity matrix
-  TMatrixT<double> identity = TMatrixT<double>(3,3);
-  identity(0,0) = 1.;
-  identity(1,1) = 1.;
-  identity(2,2) = 1.;
-  m_identity = new TMatrixT<double>( identity );
+  m_identity = new G4RotationMatrix(G4V3(1,0,0),
+				    G4V3(0,1,0),
+				    G4V3(0,0,1));
+				    
+
+  //TMatrixT<double> identity = TMatrixT<double>(3,3);
+  //identity(0,0) = 1.;
+  //identity(1,1) = 1.;
+  //identity(2,2) = 1.;
+  //m_identity = new TMatrixT<double>( identity );
   
   // Set the rotation matrices
   setInitialRotation();
   setBackRotation();
   
   // Setup the z shift
-  m_zshift.SetXYZ(0,0, m_blockCenter.z() + m_blockDim.z()/2.);
+  m_zshift.set(0,0, m_blockCenter.z() + m_blockDim.z()/2.);
 
   // Set initialization flag
   m_initialized = true;
@@ -107,16 +112,16 @@ G4ThreeVector RefractionTool::getIntPoint(G4ThreeVector g4_pt,
   //G4cout<<"\t"<<fabs(expectedAngle - theta_r) * 180/m_pi<<G4endl;
 
   if( theta_i >= asin(m_n1/m_n0) || fabs(expectedAngle - theta_r) * 180/m_pi > m_tolerance ){
-    pipp.SetXYZ(-9999,-9999,-9999);
+    pipp.set(-9999,-9999,-9999);
     theta_i = -9999;
     theta_r = -9999;
-    return G4ThreeVector(pipp.X(), pipp.Y(), pipp.Z());
+    return G4ThreeVector(pipp.x(), pipp.y(), pipp.z());
   }
 
   // Now rotate and translate back along z axis
   pipp += m_zshift;
   pipp = *m_backRot * pipp;
-  return G4ThreeVector(pipp.X(), pipp.Y(), pipp.Z());
+  return G4ThreeVector(pipp.x(), pipp.y(), pipp.z());
   
 }
 
@@ -155,13 +160,13 @@ G4V3 RefractionTool::scanIntPoint(G4V3 pt, G4V3 pa)
     for(G4int iy=0; iy<nysteps; ++iy){
       double yi = ymin + iy * ystep;
 
-      temp.SetXYZ(xi,yi,0);
+      temp.set(xi,yi,0);
       double gx = fabs( getGradient(pt,pa,temp,0) );
       double gy = fabs( getGradient(pt,pa,temp,1) );
 
       if( gx + gy <= gradSum ){
 	gradSum = gx + gy;
-	pi.SetXYZ(xi,yi,0);
+	pi.set(xi,yi,0);
       }
 
     }// end loop over y points
@@ -215,11 +220,11 @@ double RefractionTool::getGradient(G4V3 pt, G4V3 pa,
   // of n0 * sin(theta0) - n1 * sin(theta1).
 
   // First the constant factors
-  if( (pt - pi).Mag() == 0 ) return grad;
-  if( (pa - pi).Mag() == 0 ) return grad;
+  if( (pt - pi).mag() == 0 ) return grad;
+  if( (pa - pi).mag() == 0 ) return grad;
   
-  double t_const = m_n0 / (pt-pi).Mag();
-  double a_const = m_n1 / (pa-pi).Mag();
+  double t_const = m_n0 / (pt-pi).mag();
+  double a_const = m_n1 / (pa-pi).mag();
   
   // Now calculate gradient
   grad = t_const * fabs(ct-ci) - a_const * fabs(ca-ci);
@@ -235,7 +240,8 @@ double RefractionTool::getGradient(G4V3 pt, G4V3 pa,
 void RefractionTool::setInitialRotation()
 {
 
-  m_initialRot = getRotationMatrix(G4V3(0,0,1), m_planeNorm);
+  //m_initialRot = getRotationMatrix(G4V3(0,0,1), m_planeNorm);
+  m_initialRot = getRotationMatrix(m_planeNorm,G4V3(0,0,1));
 
 }
 
@@ -245,14 +251,17 @@ void RefractionTool::setInitialRotation()
 void RefractionTool::setBackRotation()
 {
 
-  m_backRot = getRotationMatrix(m_planeNorm, G4V3(0,0,1));
+  //m_backRot = getRotationMatrix(m_planeNorm, G4V3(0,0,1));
+  m_backRot = getRotationMatrix(G4V3(0,0,1), m_planeNorm);
 
 }
 
 //--------------------------------------------------------//
 // Get generic rotation matrix
 //--------------------------------------------------------//
-TMatrixT<double>* RefractionTool::getRotationMatrix(G4V3 v0,
+//TMatrixT<double>* RefractionTool::getRotationMatrix(G4V3 v0,
+//						    G4V3 v1)
+G4RotationMatrix* RefractionTool::getRotationMatrix(G4V3 v0,
 						    G4V3 v1)
 {
 
@@ -265,18 +274,19 @@ TMatrixT<double>* RefractionTool::getRotationMatrix(G4V3 v0,
   // [v]_x = skew symmetrix matrix
 
   // Get V
-  G4V3 v = v1.Cross( v0 );
+  G4V3 v = v1.cross( v0 );
   
   // Get S
-  double s = v.Mag();
+  G4double s = v.mag();
   
   // Get C
-  double c = v1.Dot( v0 );
+  G4double c = v1.dot( v0 );
 
   // Handle special case of v0 || v1 already
   if( c == 1 ) return m_identity;
   
   // Setup the skew symmetric matrix
+  /*
   TMatrixT<double> v_x = TMatrixT<double>(3,3);
   v_x(0,1) = -v[2];
   v_x(0,2) = v[1];
@@ -284,9 +294,26 @@ TMatrixT<double>* RefractionTool::getRotationMatrix(G4V3 v0,
   v_x(1,2) = -v[0];
   v_x(2,0) = -v[1];
   v_x(2,1) = v[0];
+  */
+  
+  // This sucks balls. The rotation matrix doesn't have the add operator
+  // and I don't feel like writing my own class and including it.. so do
+  // it manually here
+  G4double cs = (1-c)/(s*s);
+  G4V3 row0 = G4V3(1 + cs * (-pow(v[2],2)-pow(v[1],2)),
+		   -v[2] + cs*v[0]*v[1],
+		   v[1] + cs*v[0]*v[2]);
+  G4V3 row1 = G4V3(v[2] - cs*v[0]*v[1],
+		   1 + cs*(-pow(v[2],2)-pow(v[0],2)),
+		   -v[0] + cs*v[1]*v[2]);
+  G4V3 row2 = G4V3(-v[1] - cs*v[0]*v[2],
+		   v[0] + cs*v[1]*v[2],
+		   1 + cs*(-pow(v[0],2)-pow(v[1],2)));
+
+  return new G4RotationMatrix(row0,row1,row2);
 
   // Setup the rotation matrix
-  return new TMatrixT<double>(*m_identity + v_x + v_x*v_x*((1-c)/(s*s)));
+  //return new TMatrixT<double>(*m_identity + v_x + v_x*v_x*((1-c)/(s*s)));
   
 }
 
@@ -305,7 +332,7 @@ G4ThreeVector RefractionTool::getTransmittedField(G4ThreeVector g4_E,
   G4V3 E = G4V3(g4_E.x(), g4_E.y(), g4_E.z());
 
   // Get the inclinatin of the ice
-  double tilt     = atan( m_planeNorm.X() / m_planeNorm.Z() );
+  double tilt     = atan( m_planeNorm.x() / m_planeNorm.z() );
 
   // Get how much to rotate around y-axis
   double rotation = m_pi/2 - tilt;
@@ -314,8 +341,8 @@ G4ThreeVector RefractionTool::getTransmittedField(G4ThreeVector g4_E,
   G4V3 Eprime = getRotatedE(E, rotation, false);
 
   // Break into Es and Ep
-  G4V3 Es = G4V3(0,0,Eprime.Z());
-  G4V3 Ep = G4V3(Eprime.X(),Eprime.Y(),0);
+  G4V3 Es = G4V3(0,0,Eprime.z());
+  G4V3 Ep = G4V3(Eprime.x(),Eprime.y(),0);
 
   // Get adjusted Es and Ep
   G4V3 Es_prime = getRefractedPerp(Es, theta_i);
@@ -325,7 +352,7 @@ G4ThreeVector RefractionTool::getTransmittedField(G4ThreeVector g4_E,
   G4V3 E_prime = getRotatedE(Es_prime+Ep_prime, rotation, true);
 
   // Return electric field
-  return G4ThreeVector(E_prime.X(), E_prime.Y(), E_prime.Z());
+  return G4ThreeVector(E_prime.x(), E_prime.y(), E_prime.z());
 
 
 }
@@ -340,7 +367,8 @@ G4V3 RefractionTool::getRotatedE(G4V3 E,
 {
 
   int sign = back ? -1 : 1;
-  TMatrixT<double> rotMat = getRotationMatrixY(sign*rotation);
+  //TMatrixT<double> rotMat = getRotationMatrixY(sign*rotation);
+  G4RotationMatrix rotMat = getRotationMatrixY(sign*rotation);
   return rotMat * E;
 
 }
@@ -349,16 +377,20 @@ G4V3 RefractionTool::getRotatedE(G4V3 E,
 // Get Rotation matrix around y-axis
 // This is counter clockwise rotation around y-axis
 //--------------------------------------------------------//
-TMatrixT<double> RefractionTool::getRotationMatrixY(double beta)
+//TMatrixT<double> RefractionTool::getRotationMatrixY(double beta)
+G4RotationMatrix RefractionTool::getRotationMatrixY(double beta)
 {
 
-  TMatrixT<double> rotMat = TMatrixT<double>(3,3);
+  /*TMatrixT<double> rotMat = TMatrixT<double>(3,3);
   rotMat(0,0) = cos(beta);
   rotMat(0,2) = -sin(beta);
   rotMat(1,1) = 1;
   rotMat(2,0) = sin(beta);
   rotMat(2,2) = cos(beta);
-  
+  */
+  G4RotationMatrix rotMat = G4RotationMatrix( G4V3(cos(beta),0,sin(beta)),
+					      G4V3(0,1,0),
+					      G4V3(-sin(beta),0,cos(beta)) );
   return rotMat;
 
 }
@@ -369,8 +401,8 @@ TMatrixT<double> RefractionTool::getRotationMatrixY(double beta)
 G4V3 RefractionTool::getRefractedPerp(G4V3 Es, double theta_i)
 {
 
-  double Esmag      = Es.Mag();
-  G4V3 Es_unit = Es.Unit();
+  double Esmag      = Es.mag();
+  G4V3 Es_unit = Es.unit();
   double num        = 2*m_n0*cos(theta_i);
   double den        = m_n0*cos(theta_i) + sqrt(pow(m_n1,2)-pow(m_n0*sin(theta_i),2));
 
@@ -384,8 +416,8 @@ G4V3 RefractionTool::getRefractedPerp(G4V3 Es, double theta_i)
 G4V3 RefractionTool::getRefractedParallel(G4V3 Ep, double theta_i)
 {
 
-  double Epmag   = Ep.Mag();
-  G4V3 Ep_unit = Ep.Unit();
+  double Epmag   = Ep.mag();
+  G4V3 Ep_unit = Ep.unit();
   double num = 2*m_n0*m_n1*cos(theta_i);
   double den = pow(m_n1,2)*cos(theta_i) + m_n0*sqrt(pow(m_n1,2)-pow(m_n0*sin(theta_i),2));
 

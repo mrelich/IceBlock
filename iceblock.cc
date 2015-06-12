@@ -238,7 +238,7 @@ int main(int argc, char** argv)
   RefractionTool* refTool = new RefractionTool();
   refTool->setUse(useRefTool);
   //ss << "_tilt45deg";
-  ss << "_tilt30deg";
+  ss << "_tilt30deg_rootRemoved_rotationFix";
   if(useRefTool) ss << "_refractionOn";
   //ss << "_test";
   //ss << "_allIce";
@@ -276,7 +276,7 @@ int main(int argc, char** argv)
   // This is not currently used anymore since we have the
   // e-field directly calculated
   //std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
-  //std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
+  std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream APotOut(("efield/A_"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream EFOut(("efield/E_"+ss.str()+".dat").c_str(), std::ofstream::out);
 
@@ -314,11 +314,11 @@ int main(int argc, char** argv)
 
   // Setup the actions to carry out  
   runManager->SetUserAction(new RunAction(detector,genAction));
-  runManager->SetUserAction(new EventAction(NULL, NULL, //&trackOutput, &stepOutput,
+  runManager->SetUserAction(new EventAction(NULL, &stepOutput, //&trackOutput, &stepOutput,
 					    &APotOut,
 					    &EFOut,
 					    &m_Ants));
-  runManager->SetUserAction(new SteppingAction(NULL /*&stepOutput*/, &m_Ants, refTool));
+  runManager->SetUserAction(new SteppingAction(&stepOutput, &m_Ants, refTool));
   //runManager->SetUserAction(new TrackingAction(&trackOutput));
 
   // Initialize G4 Kernel

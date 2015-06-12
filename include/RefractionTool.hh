@@ -8,15 +8,15 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
 
 #include "globals.hh"
-//#include "G4RotationMatrix.hh"
-//#include "G4ThreeVector.hh"
-#include "Constants.hh"
-#include "TVector3.h"
-#include "TMatrixT.h"
+#include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
+#include "Constants.hh"
+//#include "TVector3.h"
+//#include "TMatrixT.h"
 
-//typedef G4ThreeVector G4V3;
-typedef TVector3 G4V3;
+
+typedef G4ThreeVector G4V3;
+//typedef TVector3 G4V3;
 
 class RefractionTool
 {
@@ -31,10 +31,10 @@ class RefractionTool
 
   // initialize
   void initialize(G4ThreeVector planeNorm,    // vector normal to the top face
-		 G4ThreeVector blockCenter,  // Position of the iceblock center
-		 G4ThreeVector blockDim,     // Dimensions of the block    
-		 double index0,              // index of refraction inside the block
-		 double index1);             // index of refraction outside the block
+		  G4ThreeVector blockCenter,  // Position of the iceblock center
+		  G4ThreeVector blockDim,     // Dimensions of the block    
+		  double index0,              // index of refraction inside the block
+		  double index1);             // index of refraction outside the block
 
 
   // Method to get the intercept/interaction point
@@ -70,8 +70,10 @@ class RefractionTool
   // one vector into the other
   //G4RotationMatrix getRotationMatrix(G4V3 v0,   // Desired direction
   //G4V3 v1);  // Vector to be rotated
-  TMatrixT<double>* getRotationMatrix(G4V3 v0,   // Desired direction
-				      G4V3 v1);  // Vector to be rotated
+  //TMatrixT<double>* getRotationMatrix(G4V3 v0,   // Desired direction
+  //				      G4V3 v1);  // Vector to be rotated
+  G4RotationMatrix* getRotationMatrix(G4V3 v0,   // Desired direction
+  				      G4V3 v1);  // Vector to be rotated
 
 
   
@@ -83,23 +85,24 @@ class RefractionTool
 
   
   // Get rotation matrix around y-axis
-  TMatrixT<double> getRotationMatrixY(double beta);
+  //TMatrixT<double> getRotationMatrixY(double beta);
+  G4RotationMatrix getRotationMatrixY(double beta);
 
   // Get Refracted field in perpendicular region
-  G4V3 getRefractedPerp(TVector3 Es,      // E-field perpendicular to the plane
+  G4V3 getRefractedPerp(G4V3 Es,      // E-field perpendicular to the plane
 			double theta_i);  // angle of incidence
   
   // Get Refracted field in parallel region
-  G4V3 getRefractedParallel(TVector3 Ep,     // E-field parallel to the plane
+  G4V3 getRefractedParallel(G4V3 Ep,         // E-field parallel to the plane
 			    double theta_i); // angle of incidence
 
 
-  //G4RotationMatrix m_initialRot;    // Initial rotation matrix
-  //G4RotationMatrix m_backRot;       // Rotate back
-  //G4RotationMatrix m_identity;      // Identity matrix
-  TMatrixT<double>* m_initialRot;    // Initial rotation matrix
-  TMatrixT<double>* m_backRot;       // Rotate back
-  TMatrixT<double>* m_identity;      // Identity matrix
+  G4RotationMatrix* m_initialRot;    // Initial rotation matrix
+  G4RotationMatrix* m_backRot;       // Rotate back
+  G4RotationMatrix* m_identity;      // Identity matrix
+  //TMatrixT<double>* m_initialRot;    // Initial rotation matrix
+  //TMatrixT<double>* m_backRot;       // Rotate back
+  //TMatrixT<double>* m_identity;      // Identity matrix
 
   G4V3 m_planeNorm;                 // Vector for normal to plane
   G4V3 m_blockCenter;               // center coordinate of the iceblock
