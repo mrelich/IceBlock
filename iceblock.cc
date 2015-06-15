@@ -115,6 +115,7 @@ int main(int argc, char** argv)
   std::string beamFile   = "";    // Beam profile from txt file
   G4double stepLimit     = -1;    // Beam step limit
   G4bool useRefTool      = false; // Turn on refraction
+  G4int theSeed          = 564738291; // Generic seed
 
   //============================================//
   // Load the options
@@ -154,6 +155,8 @@ int main(int argc, char** argv)
       stepLimit = atof( argv[++i] );
     else if( strcmp(argv[i], "--refraction") == 0)
       useRefTool = true;
+    else if( strcmp(argv[i], "--seed" ) == 0 )
+      theSeed = atoi( argv[++i] );
     else{
       help();
       return 0;
@@ -247,7 +250,10 @@ int main(int argc, char** argv)
   //ss << "_smallIce_30degTilt_Ant46deg";
   //ss << "_smallIce_30degTilt_pointOnPlane_fixed_nice";
   //ss << "_smallIce_30degTilt_Antenna68deg";
-  
+
+  // New feature: choose seed
+  ss << "_seed" << theSeed; 
+
   //============================================//
   // Configure Geant Below
   //============================================//
@@ -308,7 +314,7 @@ int main(int argc, char** argv)
 								 nParticles,
 								 b_flat, b_gauss, sigma,
 								 nbunches, tOffset,
-								 bp);  
+								 bp, theSeed);  
   
   runManager->SetUserAction(genAction);
 

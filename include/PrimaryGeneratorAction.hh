@@ -21,7 +21,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   // Constructor / Destructor
   PrimaryGeneratorAction(DetectorConstruction*, G4float, std::string, G4int,
-			 G4bool, G4bool, G4double, G4int, G4double, BeamProfile*);
+			 G4bool, G4bool, G4double, G4int, G4double, BeamProfile*, G4int);
   ~PrimaryGeneratorAction();
 
   void GeneratePrimaries(G4Event*);
@@ -39,8 +39,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   G4int m_nbunch;      // Adding ability to add offset
   G4double m_tOffset;  // Adding offset for bunch structure
-
+  
   BeamProfile* m_bp;   // Beam profile
+
+  G4int m_theSeed;     // Seed
 
   //std::ofstream* f_test; // Used to get data on beam profile
 };

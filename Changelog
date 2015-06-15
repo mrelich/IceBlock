@@ -1,3 +1,6 @@
+2015-06-15 Matt:
+	* Adding ability to set seed to run jobs in parallel
+
 2015-06-12 Matt:
 	* Returning to simulation. Code is not clean yet!
 	* Committing latest version that has refraction included.

@@ -14,14 +14,16 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC,
 					       G4double sigma,
 					       G4int nbunch,
 					       G4double tOffset,
-					       BeamProfile* bp) :
+					       BeamProfile* bp,
+					       G4int theSeed) :
   myDetector(NULL),
   m_flat(b_flat),
   m_gauss(b_gauss),
   m_sigma(sigma),
   m_nbunch(nbunch),
   m_tOffset(tOffset),
-  m_bp(NULL)
+  m_bp(NULL),
+  m_theSeed(theSeed)
 {
 
   //
@@ -54,8 +56,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC,
   //
   // Specify the seeds
   //
-  G4RandGauss::setTheSeed(1234567654);
-  CLHEP::RandFlat::setTheSeed(1234567654);
+  G4RandGauss::setTheSeed(abs(theSeed + 54321));
+  CLHEP::RandFlat::setTheSeed(abs(theSeed - 172634));  
+  CLHEP::HepRandom::setTheSeed(m_theSeed);
 
   //
   // Set the beam profile object
