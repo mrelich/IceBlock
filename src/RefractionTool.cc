@@ -1,5 +1,9 @@
 
 #include "RefractionTool.hh"
+#include <fstream>
+#include <sstream>
+
+using namespace std;
 
 //--------------------------------------------------------//
 // Constructor
@@ -11,8 +15,11 @@ RefractionTool::RefractionTool() :
   m_n0(1.78),
   m_n1(1.00),
   m_tolerance(1),
-  m_initialized(false)
+  m_initialized(false),
+  m_useTool(false),
+  m_useLookup(true)
 {
+
 
 }
 
@@ -34,11 +41,12 @@ RefractionTool::~RefractionTool()
 //--------------------------------------------------------//
 // Initialize the tool
 //--------------------------------------------------------//
-void RefractionTool::initialize(G4ThreeVector planeNorm,
-				G4ThreeVector blockCenter,
-				G4ThreeVector blockDim,
+void RefractionTool::initialize(G4V3 planeNorm,
+				G4V3 blockCenter,
+				G4V3 blockDim,
 				double index0,
-				double index1)
+				double index1,
+				vector<Antenna*>* ants)
 {
 
   // Set vectors and coordinates
@@ -69,19 +77,67 @@ void RefractionTool::initialize(G4ThreeVector planeNorm,
   // Setup the z shift
   m_zshift.set(0,0, m_blockCenter.z() + m_blockDim.z()/2.);
 
+  // Initialize the lookup tables for each antenna
+  // TODO: Try to handle this better...
+  G4int icetilt = G4int(asin(planeNorm.x())*180/m_pi);
+  stringstream ss;
+  for(unsigned int iA=0; iA<ants->size(); ++iA){
+    G4double zpos = ants->at(iA)->getZ();
+    ss.str("");
+    ss << "data/lookup/lookup_ice_" << icetilt << "_zant_" << zpos << ".txt";
+    ifstream infile(ss.str().c_str());
+    if( !infile.good() ){
+      G4cout<<"Lookup table doesn't exist: "<<ss.str()<<G4endl;
+      G4cout<<"Please check path. Code may crash."<<G4endl;
+      m_useLookup = false;
+      break;
+    }
+    m_lookups.push_back( new LookUpTable(ss.str()) );
+    
+  }// end loop over antennas
+
+  G4cout<<"Set use tool: "<<m_useLookup<<G4endl;
+
   // Set initialization flag
   m_initialized = true;
 
+}
+
+//--------------------------------------------------------//
+// Get the Interaction Point using lookup tables
+//--------------------------------------------------------//
+G4V3 RefractionTool::getIntPoint(G4V3 pt, G4int iAnt, 
+				 G4double &theta_i)
+{
+
+  G4int lsize = m_lookups.size();
+  if( iAnt > lsize ){
+    G4cout<<"Lookup table doesn't exist for antenna!!!"<<G4endl;
+    G4cout<<"Just returning the track middle point!!! "<<G4endl;
+    return pt;
+  }
+  
+
+  // Get the interaction Point
+  G4V3 intPoint = m_lookups.at(iAnt)->getG4vector(pt);
+
+  // In the lookup tables, if an
+  // entry is not possible the point 
+  // is set to -1,-1,-1
+  if( intPoint.x() == -1 && intPoint.y() == -1 && intPoint.z() == -1 )
+    intPoint.set(-9999,-9999,-9999);
+  
+  return intPoint;
 }
 
 
 //--------------------------------------------------------//
 // Get the Interaction Point
 //--------------------------------------------------------//
-G4ThreeVector RefractionTool::getIntPoint(G4ThreeVector g4_pt,
-					  G4ThreeVector g4_pa,
-					  G4double &theta_i,
-					  G4double &theta_r)
+G4V3 RefractionTool::getIntPoint(G4V3 g4_pt,
+				 G4V3 g4_pa,
+				 G4double &theta_i,
+				 G4double &theta_r)
 {
 
   G4V3 pt = G4V3(g4_pt.x(), g4_pt.y(), g4_pt.z());
@@ -115,13 +171,13 @@ G4ThreeVector RefractionTool::getIntPoint(G4ThreeVector g4_pt,
     pipp.set(-9999,-9999,-9999);
     theta_i = -9999;
     theta_r = -9999;
-    return G4ThreeVector(pipp.x(), pipp.y(), pipp.z());
+    return G4V3(pipp.x(), pipp.y(), pipp.z());
   }
 
   // Now rotate and translate back along z axis
   pipp += m_zshift;
   pipp = *m_backRot * pipp;
-  return G4ThreeVector(pipp.x(), pipp.y(), pipp.z());
+  return G4V3(pipp.x(), pipp.y(), pipp.z());
   
 }
 
@@ -185,7 +241,7 @@ G4V3 RefractionTool::scanIntPoint(G4V3 pt, G4V3 pa)
 // opt -- 0=x, 1=y, 1=z (axis)
 //--------------------------------------------------------//
 double RefractionTool::getGradient(G4V3 pt, G4V3 pa,
-				     G4V3 pi, G4int opt)
+				   G4V3 pi, G4int opt)
 {
 
   // If this method fails at any point, will return 9999
@@ -325,8 +381,8 @@ G4RotationMatrix* RefractionTool::getRotationMatrix(G4V3 v0,
 // getRefractedParallel, as they use Snell's condition
 // to simplify the math
 //--------------------------------------------------------//
-G4ThreeVector RefractionTool::getTransmittedField(G4ThreeVector g4_E, 
-						  G4double theta_i)
+G4V3 RefractionTool::getTransmittedField(G4V3 g4_E, 
+					 G4double theta_i)
 {
 
   G4V3 E = G4V3(g4_E.x(), g4_E.y(), g4_E.z());
@@ -352,7 +408,7 @@ G4ThreeVector RefractionTool::getTransmittedField(G4ThreeVector g4_E,
   G4V3 E_prime = getRotatedE(Es_prime+Ep_prime, rotation, true);
 
   // Return electric field
-  return G4ThreeVector(E_prime.x(), E_prime.y(), E_prime.z());
+  return G4V3(E_prime.x(), E_prime.y(), E_prime.z());
 
 
 }

@@ -20,6 +20,9 @@
 #include "RefractionTool.hh"
 #include "Constants.hh"
 
+#include "Antenna.hh"
+#include <vector>
+
 enum Material
 {
   Mat_ICE = 0,
@@ -35,7 +38,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   
   DetectorConstruction(G4int detMaterial, G4double EThresh, 
 		       bool useThresh, G4double stepLimit,
-		       RefractionTool* refTool);
+		       RefractionTool* refTool,
+		       std::vector<Antenna*>* ants,
+		       G4int rotation);
   ~DetectorConstruction();
 
   G4VPhysicalVolume* Construct();
@@ -69,7 +74,11 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   // Pointer to refraction tool
   RefractionTool* m_refTool;
 
-  
+  // Pointer to Antennas
+  std::vector<Antenna*>* m_ants;
+
+  // Icetilt
+  G4int m_icetilt;
 
 };
 

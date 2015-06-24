@@ -7,16 +7,16 @@
 // interaction point on the ice surface.                            //
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
 
+#include <vector>
+
 #include "globals.hh"
 #include "G4RotationMatrix.hh"
 #include "G4ThreeVector.hh"
 #include "Constants.hh"
-//#include "TVector3.h"
-//#include "TMatrixT.h"
-
+#include "Antenna.hh"
+#include "LookUpTable.hh"
 
 typedef G4ThreeVector G4V3;
-//typedef TVector3 G4V3;
 
 class RefractionTool
 {
@@ -30,27 +30,33 @@ class RefractionTool
   ~RefractionTool();
 
   // initialize
-  void initialize(G4ThreeVector planeNorm,    // vector normal to the top face
-		  G4ThreeVector blockCenter,  // Position of the iceblock center
-		  G4ThreeVector blockDim,     // Dimensions of the block    
-		  double index0,              // index of refraction inside the block
-		  double index1);             // index of refraction outside the block
-
+  void initialize(G4V3 planeNorm,               // vector normal to the top face
+		  G4V3 blockCenter,             // Position of the iceblock center
+		  G4V3 blockDim,                // Dimensions of the block    
+		  double index0,                // index of refraction inside the block
+		  double index1,                // index of refraction outside the block
+		  std::vector<Antenna*>* ants); // Antennas
 
   // Method to get the intercept/interaction point
-  G4ThreeVector getIntPoint(G4ThreeVector g4_pt,      // track midpoint
-			    G4ThreeVector g4_pa,      // antenna position
-			    G4double &theta_i,        // incident angle
-			    G4double &theta_r);       // refracted angle
-  
+  G4V3 getIntPoint(G4V3 g4_pt,      // track midpoint
+		   G4V3 g4_pa,      // antenna position
+		   G4double &theta_i,        // incident angle
+		   G4double &theta_r);       // refracted angle
+
+  // Get interaction point from lookup tables
+  G4V3 getIntPoint(G4V3 pt,         // track midpoint
+		   G4int iAnt,      // antenna number		   
+		   G4double &theta_i); // incident angle
+
   // Method to retrieve fresnel rotated electric field
-  G4ThreeVector getTransmittedField(G4ThreeVector g4_E, 
-				    G4double theta_i);
+  G4V3 getTransmittedField(G4V3 g4_E, 
+			   G4double theta_i);
   
   bool isInitialized(){ return m_initialized; };
 
   void setUse(bool use){ m_useTool = use; };
   bool useTool(){ return m_useTool; };
+  bool useLookup(){ return m_useLookup; };
 
  protected:
 
@@ -100,24 +106,28 @@ class RefractionTool
   G4RotationMatrix* m_initialRot;    // Initial rotation matrix
   G4RotationMatrix* m_backRot;       // Rotate back
   G4RotationMatrix* m_identity;      // Identity matrix
-  //TMatrixT<double>* m_initialRot;    // Initial rotation matrix
-  //TMatrixT<double>* m_backRot;       // Rotate back
-  //TMatrixT<double>* m_identity;      // Identity matrix
+  //TMatrixT<double>* m_initialRot;  // Initial rotation matrix
+  //TMatrixT<double>* m_backRot;     // Rotate back
+  //TMatrixT<double>* m_identity;    // Identity matrix
 
-  G4V3 m_planeNorm;                 // Vector for normal to plane
-  G4V3 m_blockCenter;               // center coordinate of the iceblock
-  G4V3 m_blockDim;                  // Dimensions of iceblock
+  G4V3 m_planeNorm;                  // Vector for normal to plane
+  G4V3 m_blockCenter;                // center coordinate of the iceblock
+  G4V3 m_blockDim;                   // Dimensions of iceblock
 
-  G4V3 m_zshift;                    // Shift along z-axis during transformation
+  G4V3 m_zshift;                     // Shift along z-axis during transformation
 
-  double m_n0;                    // index of refraction of block material
-  double m_n1;                    // index of refraction outside block
+  double m_n0;                       // index of refraction of block material
+  double m_n1;                       // index of refraction outside block
 
-  double m_tolerance;             // Tolerance for how far off refracted angle you allow
+  double m_tolerance;                // Tolerance for how far off refracted angle you allow
 
-  bool m_initialized;             // Keep track if tool was initialized
+  bool m_initialized;                // Keep track if tool was initialized
 
-  bool m_useTool;                 // Internally store whether or not to use
+  bool m_useTool;                    // Internally store whether or not to use
+
+  std::vector<LookUpTable*> m_lookups;    // Lookup table to speed up scanning
+
+  bool m_useLookup;
 
 };
 

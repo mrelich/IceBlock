@@ -80,6 +80,8 @@ void help()
   cout << "\t Input step limit in mm (default is -1, off)" << endl;
   cout << "--refraction" << endl;
   cout << "\t Turn on refraction in the ice" << endl;
+  cout << "--rot <int>" << endl;
+  cout << "\t Specify rotation angle. Default is 30." << endl;
   cout << "------------------------------------------------------------" << endl;
   cout << endl;
   cout << endl;
@@ -116,6 +118,7 @@ int main(int argc, char** argv)
   G4double stepLimit     = -1;    // Beam step limit
   G4bool useRefTool      = false; // Turn on refraction
   G4int theSeed          = 564738291; // Generic seed
+  G4int rotation         = 30;        // Degree
 
   //============================================//
   // Load the options
@@ -157,6 +160,8 @@ int main(int argc, char** argv)
       useRefTool = true;
     else if( strcmp(argv[i], "--seed" ) == 0 )
       theSeed = atoi( argv[++i] );
+    else if( strcmp(argv[i], "--rot" ) == 0 )
+      rotation = atoi( argv[++i] );
     else{
       help();
       return 0;
@@ -236,23 +241,19 @@ int main(int argc, char** argv)
   if( stepLimit > 0 ){
     ss << "_steplimit" << stepLimit; 
   }
-  
+
   // Create the refraction tool
   RefractionTool* refTool = new RefractionTool();
   refTool->setUse(useRefTool);
-  //ss << "_tilt45deg";
-  ss << "_tilt30deg_rootRemoved_rotationFix";
   if(useRefTool) ss << "_refractionOn";
-  //ss << "_test";
-  //ss << "_allIce";
-  //ss << "_smallIce_noTilt";
-  //ss << "_smallIce_30degTilt_pointOnPlane_DistUpdate_wFresnelCoeff";
-  //ss << "_smallIce_30degTilt_Ant46deg";
-  //ss << "_smallIce_30degTilt_pointOnPlane_fixed_nice";
-  //ss << "_smallIce_30degTilt_Antenna68deg";
+
+  // Add icetilt to fname
+  ss << "_tilt" << rotation << "deg";
 
   // New feature: choose seed
   ss << "_seed" << theSeed; 
+
+  ss << "_testingLookUp";
 
   //============================================//
   // Configure Geant Below
@@ -260,8 +261,8 @@ int main(int argc, char** argv)
 
   // Setup the Antennas
   SetupAntenna* m_AntSetup = new SetupAntenna(antFile);
-  std::vector<Antenna*> m_Ants = m_AntSetup->getAnts();
-  
+  std::vector<Antenna*> m_Ants = m_AntSetup->getAnts();  
+
   // Default run manager
   G4RunManager* runManager = new G4RunManager;
 
@@ -270,7 +271,9 @@ int main(int argc, char** argv)
 							    threshold,
 							    useThreshold,
 							    stepLimit,
-							    refTool);
+							    refTool,
+							    &m_Ants,
+							    rotation);
   
   runManager->SetUserInitialization(detector);
 
@@ -282,7 +285,7 @@ int main(int argc, char** argv)
   // This is not currently used anymore since we have the
   // e-field directly calculated
   //std::ofstream trackOutput(("tracks/"+ss.str()+".dat").c_str(), std::ofstream::out);
-  std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
+  //std::ofstream stepOutput(("steps/"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream APotOut(("efield/A_"+ss.str()+".dat").c_str(), std::ofstream::out);
   std::ofstream EFOut(("efield/E_"+ss.str()+".dat").c_str(), std::ofstream::out);
 
@@ -320,11 +323,11 @@ int main(int argc, char** argv)
 
   // Setup the actions to carry out  
   runManager->SetUserAction(new RunAction(detector,genAction));
-  runManager->SetUserAction(new EventAction(NULL, &stepOutput, //&trackOutput, &stepOutput,
+  runManager->SetUserAction(new EventAction(NULL, NULL, //&trackOutput, &stepOutput,
 					    &APotOut,
 					    &EFOut,
 					    &m_Ants));
-  runManager->SetUserAction(new SteppingAction(&stepOutput, &m_Ants, refTool));
+  runManager->SetUserAction(new SteppingAction(NULL /*&stepOutput*/, &m_Ants, refTool));
   //runManager->SetUserAction(new TrackingAction(&trackOutput));
 
   // Initialize G4 Kernel
@@ -335,7 +338,7 @@ int main(int argc, char** argv)
 
   // Close up the files
   //trackOutput.close();
-  stepOutput.close();
+  //stepOutput.close();
   APotOut.close();
   EFOut.close();
     

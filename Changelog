@@ -1,3 +1,7 @@
+2015-06-24 Matt:
+	* Adding LookUpTable classes and it's implementation into stepping action
+	* Adding lookup table data
+
 2015-06-15 Matt:
 	* Adding ability to set seed to run jobs in parallel
 

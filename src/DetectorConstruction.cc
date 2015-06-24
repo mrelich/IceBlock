@@ -9,7 +9,9 @@
 //-----------------------------------------------------------------//
 DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh, 
 					   bool useThresh, G4double stepLimit,
-					   RefractionTool* refTool) :
+					   RefractionTool* refTool,
+					   std::vector<Antenna*>* ants,
+					   G4int rotation) :
   m_world_log(NULL),
   m_iceblock_log(NULL),
   m_world_phys(NULL),
@@ -21,7 +23,9 @@ DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh,
   m_stepLimit(NULL),
   m_stepLimitValue(0),
   m_rotIce(NULL),
-  m_refTool(NULL)
+  m_refTool(NULL),
+  m_ants(ants),
+  m_icetilt(rotation)
 {
 
   // Set detector material
@@ -145,12 +149,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   // Define rotation matrix for block. Here rotate
   // in the y-direction only.
-  //G4double tilt = 60 * m_pi / 180.;
-  //G4double tilt = 45 * m_pi / 180.;
-  G4double tilt = 30 * m_pi / 180.;
-  //G4double tilt = 0 * m_pi / 180.;
-  //G4double tilt = 60 * m_pi / 180.;
-  //if( !m_refTool->useTool() ) tilt = 0;
+  G4double tilt = m_icetilt * m_pi / 180.;
   m_rotIce = new G4RotationMatrix(G4ThreeVector(cos(tilt),0,sin(tilt)),
 				  G4ThreeVector(0,1,0),
 				  G4ThreeVector(-sin(tilt),0,cos(tilt)));
@@ -194,7 +193,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 			block_pos/1000,
 			G4ThreeVector(iceblock_x/1000,iceblock_y/1000,iceblock_z/1000),
 			m_n,
-			m_nAir);
+			m_nAir,
+			m_ants);
   
   //
   // Set user limits for step size
