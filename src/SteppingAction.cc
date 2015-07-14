@@ -206,10 +206,19 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
     G4double theta_i = 0; 
     G4double theta_r = 0;
     if( m_refTool->isInitialized() ){
-      AntPos = m_refTool->getIntPoint(Pm, AntPos, theta_i, theta_r);
-      if( theta_i < 0 || theta_r < 0) continue;
+      if(m_refTool->useLookup()){
+	AntPos = m_refTool->getIntPoint(Pm, iA, theta_i);	
+      }
+      else{
+	AntPos = m_refTool->getIntPoint(Pm, AntPos, theta_i, theta_r);
+	if( theta_i < 0 || theta_r < 0) continue;
+      }
     }
     
+    // check to make sure antenna position is valid
+    if(AntPos.x() <= -9999 || AntPos.y() <= -9999 || AntPos.z() <= -9999)
+      continue;
+
     // Get R and unit vector
     G4double R      = 0;
     G4ThreeVector u = G4ThreeVector();
@@ -282,7 +291,7 @@ void SteppingAction::VPotentialZHSStyle(const G4Step* aStep)
       //Az /= R_pa;
       //}
 
-      if( m_refTool->useTool()){
+      if(m_refTool->useTool()){
 	G4ThreeVector Aref = m_refTool->getTransmittedField(G4ThreeVector(Ax,Ay,Az),theta_i);
 	Ax = Aref.x();
 	Ay = Aref.y();

@@ -253,7 +253,8 @@ int main(int argc, char** argv)
   // New feature: choose seed
   ss << "_seed" << theSeed; 
 
-  ss << "_testingLookUp";
+  //ss << "_testingLookUp";
+
 
   //============================================//
   // Configure Geant Below

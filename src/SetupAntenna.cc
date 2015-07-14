@@ -121,6 +121,8 @@ void SetupAntenna::readAntennaFromFile(std::string infile)
   // with 0.5 ns steps
   int np         = 2000;
   G4double stepSize = 0.02; // ns
+  //int np         = 1000;
+  //G4double stepSize = 0.04; // ns
   
   // Antenna positions
   G4double x = 0;
