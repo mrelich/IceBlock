@@ -6,7 +6,8 @@
 //-----------------------------------------------------------------//
 // Constructor
 //-----------------------------------------------------------------//
-DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh, bool useThresh) :
+DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh, 
+					   bool useThresh, G4double stepLimit) :
   m_world_log(NULL),
   m_iceblock_log(NULL),
   m_world_phys(NULL),
@@ -14,7 +15,9 @@ DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh, bool 
   m_detMaterial(0),
   m_material(NULL),
   m_threshold(0),
-  m_useThreshold(false)
+  m_useThreshold(false),
+  m_stepLimit(NULL),
+  m_stepLimitValue(0)
 {
 
   // Set detector material
@@ -24,6 +27,9 @@ DetectorConstruction::DetectorConstruction(G4int detMat, G4double EThresh, bool 
   m_threshold    = EThresh;
   m_useThreshold = useThresh;
  
+  // Set step limit
+  m_stepLimitValue = stepLimit;
+
 }
 
 //-----------------------------------------------------------------//
@@ -88,9 +94,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create the world volume
   //
   
-  G4double world_x = 2000.0 * m;
-  G4double world_y = 2000.0 * m;
-  G4double world_z = 2000.0 * m;
+  G4double world_x = 1000.0 * m;
+  G4double world_y = 1000.0 * m;
+  G4double world_z = 1000.0 * m;
   
   // World box
   G4Box* world_box = new G4Box("WORLD", 
@@ -115,12 +121,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create the giant iceblock
   //
   
-  G4double iceblock_x = 1500.0 * m;
-  G4double iceblock_y = 1500.0 * m;
-  G4double iceblock_z = 1500.0 * m;
+  G4double iceblock_x = 1000.0 * m;
+  G4double iceblock_y = 1000.0 * m;
+  G4double iceblock_z = 500.0 * m;
   //G4double iceblock_x = 100.0 * cm;
   //G4double iceblock_y = 30.0 * cm;
   //G4double iceblock_z = 30.0 * cm;
+
+  G4ThreeVector iceblock_pos = G4ThreeVector(0,0,-0.5*iceblock_z);
 
   // Iceblock is a box
   G4Box* iceblock_box = new G4Box("ICEBLOCK",
@@ -145,12 +153,26 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   
   // Physical volume
   m_iceblock_phys = new G4PVPlacement(0,                             // no rotation
-				      G4ThreeVector(0,0,iceblock_z*0.49),
+				      iceblock_pos,
 				      m_iceblock_log,                 // its logical volume
 				      "iceblock_phys",                // name
 				      m_world_log,                   // Mother Volume
 				      false,                         // no boolean operator
 				      0);                            // copy number
+
+
+  //
+  // Set user limits for step size
+  //
+
+  if(m_stepLimitValue > 0){
+    //G4double maxStep = 0.5*mm; //1*mm; //1*cm;
+    G4double maxStep = m_stepLimitValue*mm; //1*mm; //1*cm;
+    m_stepLimit = new G4UserLimits(maxStep);
+    m_iceblock_log->SetUserLimits(m_stepLimit);
+    m_world_log->SetUserLimits(m_stepLimit);
+  }
+
   
   
   //

@@ -97,6 +97,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Check if bp is initialized, if so use it.
   int nbunches = m_bp->isInit() ? m_bp->getN() : m_nbunch;
 
+  // NEW: Specify injection point. Ice starts at (0,0,0)
+  G4double z_inj = -1 * mm;
+
   // Loop over the bunches
   for(int nb = 0; nb < nbunches; ++nb){
 
@@ -117,7 +120,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       for(G4int i=0; i<nparticles; ++i){
 	x_rand = G4RandGauss::shoot(0,m_sigma);
 	y_rand = G4RandGauss::shoot(0,m_sigma);
-	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
+	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,z_inj));
 	particleGun->SetParticleTime(tstart);
 	particleGun->GeneratePrimaryVertex(anEvent);
 	//(*f_test) << x_rand <<" " << y_rand << std::endl;
@@ -150,7 +153,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	x_rand *= x_sign;
 	y_rand *= y_sign;
 	
-	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
+	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,z_inj));
 	particleGun->SetParticleTime(tstart);
 	particleGun->GeneratePrimaryVertex(anEvent);
 	//(*f_test) << x_rand <<" " << y_rand << std::endl;
@@ -162,7 +165,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     // Nominal: all at (0,0,0)
     else{
       
-      G4ThreeVector startPos = G4ThreeVector(0*mm,0*mm,0*mm);
+      G4ThreeVector startPos = G4ThreeVector(0*mm,0*mm,z_inj);
       for(G4int i=0; i<nparticles; ++i){
 	particleGun->SetParticlePosition(startPos);
 	particleGun->SetParticleTime(tstart);

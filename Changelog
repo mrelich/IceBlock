@@ -1,3 +1,11 @@
+2015-08-05 Matt:
+	* Creating branch to study transition radiation
+	* Allowing energy to take in float from command line to study 3.6 MeV as done in Paper
+	* Moving ice to be above 0 and air below 0 in z direction
+	* Adding TRFromZHS method to Stepping Action
+	* Committing Constants.hh and the TRTool with working copy
+	* Geometry is ice --> air!!!
+
 2015-02-24 Matt:
 	* Trying to clean up a little.  First round done.
 

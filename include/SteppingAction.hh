@@ -6,9 +6,12 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 
+#include "Constants.hh"
+
 //#include "MyTreeWriter.hh"
 #include <fstream>
 #include "Antenna.hh"
+#include "TRTool.hh"
 
 class SteppingAction : public G4UserSteppingAction
 {
@@ -29,6 +32,9 @@ class SteppingAction : public G4UserSteppingAction
 
   // Write the vector potential info
   void VPotentialZHSStyle(const G4Step*);
+
+  // Write output for TR
+  void TRFromZHS(const G4Step*);
 
  private:
 
@@ -58,6 +64,26 @@ class SteppingAction : public G4UserSteppingAction
 
   // Testing
   G4double getBeta(const G4Step* step);
+
+  // Fill for antenna for TR Method
+  void fillForAntenna(Antenna* ant,
+		      G4double t0,
+		      G4double t1,
+		      G4double tD0,
+		      G4double tD1,
+		      G4double dtD_dt,
+		      G4ThreeVector A);
+  
+  // Common place to set start and stop point
+  void setInitialFinalPoint(const G4Step* step,
+			    G4ThreeVector &P0,
+			    G4ThreeVector &P1,
+			    G4double &t0,
+			    G4double &t1);
+
+  G4bool m_TRFirstPointFound;
+
+  TRTool* m_trtool;
 
 };
 
