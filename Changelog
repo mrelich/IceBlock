@@ -3,6 +3,8 @@
 	* Removing lookup table data because it is too big for github repository.
 	* Modifications and fixes made for TR from ZHS method -- Still messy though
 	* Beam moved to be slightly closer to the ice (20cm)
+	* Adding README to data/lookup dir
+	* Moving where RefractionTool looks for lookup table data to data/lookup
 
 2015-08-04 Matt:
 	* Updated calculation of Fresnel coefficients

@@ -84,8 +84,7 @@ void RefractionTool::initialize(G4V3 planeNorm,
   for(unsigned int iA=0; iA<ants->size(); ++iA){
     G4double zpos = ants->at(iA)->getZ();
     ss.str("");
-    //ss << "data/lookup/lookup_ice_" << icetilt << "_zant_" << zpos << ".txt";
-    ss << "data/newlookup/lookup_all_" << icetilt << "_zant_" << zpos << ".txt";
+    ss << "data/lookup/lookup_ice_" << icetilt << "_zant_" << zpos << ".txt";
     ifstream infile(ss.str().c_str());
     if( !infile.good() ){
       G4cout<<"Lookup table doesn't exist: "<<ss.str()<<G4endl;

@@ -1,0 +1,7 @@
+Please put your lookup tables here, following the naming convention
+given by Romain.  
+
+TODO: Maybe have the lookup tables just contain the antenna position
+and information.  As it is done right now, one has to specify the 
+antennas separately, and make sure that there is a lookup table
+for each antenna...  Not the best option I think.
