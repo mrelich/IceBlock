@@ -1,0 +1,16 @@
+# .bashrc
+
+# This should be the path to your geant4 build directory
+#source /home/mrelich/geant/geant4.10.00.p01-build/geant4make.sh
+source /proj/soft/g4/geant4.10.0.p03/build/geant4make.sh
+
+#------ geant4.10.00 on grappa-------------------------------------
+export G4ABLADATA=${G4INSTALL}/data/G4ABLA3.0
+export G4LEDATA=${G4INSTALL}/data/G4EMLOW6.35    
+export G4NEUTRONHPDATA=${G4INSTALL}/data/G4NDL4.4
+export G4RADIOACTIVEDATA=${G4INSTALL}/data/RadioactiveDecay4.0
+export G4LEVELGAMMADATA=${G4INSTALL}/data/PhotonEvaporation3.0
+export G4PIDATA=${G4INSTALL}/data/G4PII1.3
+export G4REALSURFACEDATA=${G4INSTALL}/data/RealSurface1.0
+export G4NEUTRONXSDATA=${G4INSTALL}/data/G4NEUTRONXS1.4
+
