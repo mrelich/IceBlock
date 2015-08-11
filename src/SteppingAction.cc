@@ -39,9 +39,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 {
 
   //WriteSteps(aStep);
-  //VPotentialZHSStyle(aStep);
+  VPotentialZHSStyle(aStep);
   //EFieldEndpointStyle(aStep);
-  TRFromZHS(aStep);
+  //TRFromZHS(aStep);
   
 }
 
