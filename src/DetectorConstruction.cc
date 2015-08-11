@@ -3,6 +3,7 @@
 #include "DetectorConstruction.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4RotationMatrix.hh"
+#include "G4Transform3D.hh"
 
 //-----------------------------------------------------------------//
 // Constructor
@@ -153,9 +154,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   m_rotIce = new G4RotationMatrix(G4ThreeVector(cos(tilt),0,sin(tilt)),
 				  G4ThreeVector(0,1,0),
 				  G4ThreeVector(-sin(tilt),0,cos(tilt)));
+
   G4cout<<"Rotation Matrix: "<<G4endl;
   G4cout<<(*m_rotIce)<<G4endl;
-  
+
+  // UPDATE: So the way G4 handles the the placement of the object
+  // requires that the translation vector be defined in the rotated
+  // frame.  Therefore we apply the inverse rotation for the translation
+  // vector to insure that the vector is with respect to the mother volume.
+  block_pos *= (m_rotIce->inverse());
+  G4cout<<block_pos<<G4endl;
+
   // Iceblock is a box
   G4Box* iceblock_box = new G4Box("ICEBLOCK",
 				  0.5*iceblock_x,
@@ -179,12 +188,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   
   // Physical volume
   m_iceblock_phys = new G4PVPlacement(m_rotIce,                      // Rotation Matrix
-				      block_pos,                     //iceblock_z*0.49),
-				      m_iceblock_log,                // its logical volume
-				      "iceblock_phys",               // name
-				      m_world_log,                   // Mother Volume
-				      false,                         // no boolean operator
-				      0);                            // copy number
+  				      block_pos,                     //iceblock_z*0.49),
+  				      m_iceblock_log,                // its logical volume
+  				      "iceblock_phys",               // name
+  				      m_world_log,                   // Mother Volume
+  				      false,                         // no boolean operator
+  				      0);                            // copy number
   
   // Initialize the refraction tool with the geometry
   // settings of the ice

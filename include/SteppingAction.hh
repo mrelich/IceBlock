@@ -35,17 +35,21 @@ class SteppingAction : public G4UserSteppingAction
   // Write the Efield from Endpoint
   void EFieldEndpointStyle(const G4Step*);
 
-  // Find the intersection point on the surface
-  // of the iceblock for a specific Antenna
-  //G4ThreeVector FindIntersection(G4ThreeVector antPos,      // Antenna position
-  //				 G4ThreeVector midPoint,    // Mid-point of the track
-  //				 G4PhysicalVolume* volume); // IceBlock volume
+  // Write the vector potential info from TR
+  void TRFromZHS(const G4Step*);
 
  private:
 
   std::ofstream* m_output;  
   std::vector<Antenna*> *m_ants;
   //MyTreeWriter* m_treeWriter;
+
+  // Set intial and final points for the step
+  void setInitialFinalPoint(const G4Step* step,
+			    G4ThreeVector &P0,
+			    G4ThreeVector &P1,
+			    G4double &t0,
+			    G4double &t1);
 
   // Get Velocity vector
   G4ThreeVector getVelocity(G4ThreeVector P0,
@@ -79,8 +83,22 @@ class SteppingAction : public G4UserSteppingAction
 				  G4double q,         // charge [esu]
 				  G4double c);        // Speed of light [cm/s]
 
+  // Fill antennas from TR
+  void fillForAntenna(Antenna* ant,
+		      G4double t0,
+		      G4double t1,
+		      G4double tD0,
+		      G4double tD1,
+		      G4double dtD_dt,
+		      G4ThreeVector A);
+
+
   // Tool for handling refraction
   RefractionTool* m_refTool;
+  
+  // Bool to tell whether or not outside point
+  // has been used in TR calculation
+  bool m_TRFirstPointFound;
 
 };
 #endif

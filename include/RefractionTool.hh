@@ -44,13 +44,23 @@ class RefractionTool
 		   G4double &theta_r);       // refracted angle
 
   // Get interaction point from lookup tables
-  G4V3 getIntPoint(G4V3 pt,         // track midpoint
-		   G4int iAnt,      // antenna number		   
-		   G4double &theta_i); // incident angle
+  G4V3 getIntPoint(G4V3 pt,             // track midpoint
+		   G4int iAnt,          // antenna number		   
+		   G4double &theta_i,   // incident angle
+		   G4double &theta_r,   // refracted angle
+		   G4double &R,         // Total optical path
+		   G4bool inice=true,   // is the point in ice?
+		   G4bool direct=true); // do we want direct or reflected path?
+
+  // Get the midpoint that crosses the surface boundary.
+  // This is used in transition radiation calculation
+  G4V3 getIntMidPoint(G4V3 P0,       // Start point for step
+		      G4V3 P1);      // End point for step
 
   // Method to retrieve fresnel rotated electric field
   G4V3 getTransmittedField(G4V3 g4_E, 
-			   G4double theta_i);
+			   G4double theta_i,
+			   G4bool iceToAir=true);
   
   bool isInitialized(){ return m_initialized; };
 
@@ -95,13 +105,18 @@ class RefractionTool
   G4RotationMatrix getRotationMatrixY(double beta);
 
   // Get Refracted field in perpendicular region
-  G4V3 getRefractedPerp(G4V3 Es,      // E-field perpendicular to the plane
-			double theta_i);  // angle of incidence
-  
-  // Get Refracted field in parallel region
-  G4V3 getRefractedParallel(G4V3 Ep,         // E-field parallel to the plane
-			    double theta_i); // angle of incidence
+  G4V3 getRefractedPerp(G4V3 Es,          // E-field perpendicular to the plane
+			G4double theta_i, // angle of incidence
+			G4bool iceToAir); // to deal with ice->air or air->ice 
 
+  // Get Refracted field in parallel region
+  G4V3 getRefractedParallel(G4V3 Ep,          // E-field parallel to the plane
+			    G4double theta_i, // angle of incidence
+			    G4bool iceToAir); // to deal with ice->air or air->ice
+
+  G4double getCorrectionFactor(G4double n0,        // index of material containing shower
+			       G4double n1,        // index of material refracting into
+			       G4double theta_i);  // incident angle
 
   G4RotationMatrix* m_initialRot;    // Initial rotation matrix
   G4RotationMatrix* m_backRot;       // Rotate back

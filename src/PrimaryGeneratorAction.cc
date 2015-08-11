@@ -97,6 +97,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // is taken from the WC monitor. This is stored as a BeamProfile
   // object and is called m_bp in this class.
 
+  // set z position of the beam
+  G4double z_beam = -0.5*m;
+
   // Check if bp is initialized, if so use it.
   int nbunches = m_bp->isInit() ? m_bp->getN() : m_nbunch;
 
@@ -120,7 +123,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       for(G4int i=0; i<nparticles; ++i){
 	x_rand = G4RandGauss::shoot(0,m_sigma);
 	y_rand = G4RandGauss::shoot(0,m_sigma);
-	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
+	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,z_beam));
 	particleGun->SetParticleTime(tstart);
 	particleGun->GeneratePrimaryVertex(anEvent);
 	//(*f_test) << x_rand <<" " << y_rand << std::endl;
@@ -153,7 +156,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	x_rand *= x_sign;
 	y_rand *= y_sign;
 	
-	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,0*mm));
+	particleGun->SetParticlePosition(G4ThreeVector(x_rand*mm,y_rand*mm,z_beam));
 	particleGun->SetParticleTime(tstart);
 	particleGun->GeneratePrimaryVertex(anEvent);
 	//(*f_test) << x_rand <<" " << y_rand << std::endl;
@@ -165,7 +168,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     // Nominal: all at (0,0,0)
     else{
       
-      G4ThreeVector startPos = G4ThreeVector(0*mm,0*mm,0*mm);
+      G4ThreeVector startPos = G4ThreeVector(0*mm,0*mm,z_beam);
       for(G4int i=0; i<nparticles; ++i){
 	particleGun->SetParticlePosition(startPos);
 	particleGun->SetParticleTime(tstart);

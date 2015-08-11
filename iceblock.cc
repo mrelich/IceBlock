@@ -44,7 +44,7 @@ void help()
   cout << "-np <int> " << endl;
   cout << "\t Specify the number of particles " << endl;
   cout << "\t default is 1 " << endl;
-  cout << "-e <int> " << endl;
+  cout << "-e <float> " << endl;
   cout << "\t Specify the beam energy in MeV" << endl;
   cout << "\t Default is 1000 MeV" << endl;
   cout << "-t <int> " << endl; 
@@ -78,8 +78,8 @@ void help()
   cout << "\t Input beam profile file" << endl;
   cout << "--stepLimit <int> " << endl;
   cout << "\t Input step limit in mm (default is -1, off)" << endl;
-  cout << "--refraction" << endl;
-  cout << "\t Turn on refraction in the ice" << endl;
+  cout << "--refCoeff" << endl;
+  cout << "\t Include Fresnel coefficients" << endl;
   cout << "--rot <int>" << endl;
   cout << "\t Specify rotation angle. Default is 30." << endl;
   cout << "------------------------------------------------------------" << endl;
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
   //============================================//
   G4int nEvents          = 1;     // number of events
   G4int nParticles       = 1;     // number of particles
-  G4int beamEnergy       = 1000;  // beam energy
+  G4float beamEnergy     = 1000;  // beam energy
   G4int detMaterial      = 0;     // detector material
   std::string partType   = "e-";  // primary particle
   G4double threshold     = 0;     // energy threshold for testing -- leave 0
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
     else if( strcmp(argv[i], "-np") == 0 )
       nParticles = atoi( argv[++i] );
     else if( strcmp(argv[i], "-e") == 0 )
-      beamEnergy = atoi( argv[++i] );
+      beamEnergy = atof( argv[++i] );
     else if( strcmp(argv[i], "-t") == 0 )
       detMaterial = atoi( argv[++i] );
     else if( strcmp(argv[i], "-p") == 0 )
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
       beamFile = argv[++i];
     else if( strcmp(argv[i], "--stepLimit") == 0)
       stepLimit = atof( argv[++i] );
-    else if( strcmp(argv[i], "--refraction") == 0)
+    else if( strcmp(argv[i], "--refCoeff") == 0)
       useRefTool = true;
     else if( strcmp(argv[i], "--seed" ) == 0 )
       theSeed = atoi( argv[++i] );
@@ -254,7 +254,8 @@ int main(int argc, char** argv)
   ss << "_seed" << theSeed; 
 
   //ss << "_testingLookUp";
-
+  //ss << "_testingshiz_updatedLookup";
+  ss << "_TRTEST";
 
   //============================================//
   // Configure Geant Below

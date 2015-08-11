@@ -84,7 +84,8 @@ void RefractionTool::initialize(G4V3 planeNorm,
   for(unsigned int iA=0; iA<ants->size(); ++iA){
     G4double zpos = ants->at(iA)->getZ();
     ss.str("");
-    ss << "data/lookup/lookup_ice_" << icetilt << "_zant_" << zpos << ".txt";
+    //ss << "data/lookup/lookup_ice_" << icetilt << "_zant_" << zpos << ".txt";
+    ss << "data/newlookup/lookup_all_" << icetilt << "_zant_" << zpos << ".txt";
     ifstream infile(ss.str().c_str());
     if( !infile.good() ){
       G4cout<<"Lookup table doesn't exist: "<<ss.str()<<G4endl;
@@ -107,7 +108,11 @@ void RefractionTool::initialize(G4V3 planeNorm,
 // Get the Interaction Point using lookup tables
 //--------------------------------------------------------//
 G4V3 RefractionTool::getIntPoint(G4V3 pt, G4int iAnt, 
-				 G4double &theta_i)
+				 G4double &theta_i,
+				 G4double &theta_r,
+				 G4double &R,
+				 G4bool inice,
+				 G4bool direct)
 {
 
   G4int lsize = m_lookups.size();
@@ -119,14 +124,29 @@ G4V3 RefractionTool::getIntPoint(G4V3 pt, G4int iAnt,
   
 
   // Get the interaction Point
-  G4V3 intPoint = m_lookups.at(iAnt)->getG4vector(pt);
+  //G4V3 intPoint = m_lookups.at(iAnt)->getG4vector(pt);
+  G4V3 intPoint;
+  if( inice ){
+    intPoint = m_lookups.at(iAnt)->geticevector(pt, true, direct);
+    G4V3 temp = m_lookups.at(iAnt)->geticevector(pt, false, direct);
+    theta_i = temp.x();  
+    theta_r = temp.y();  
+    R       = temp.z();  
+  }
+  else{
+    intPoint = m_lookups.at(iAnt)->getairvector(pt,true);
+    G4V3 temp = m_lookups.at(iAnt)->getairvector(pt, false);
+    theta_i = temp.x();
+    theta_r = temp.y();
+    R       = temp.z();
+  }
 
   // In the lookup tables, if an
   // entry is not possible the point 
   // is set to -1,-1,-1
   if( intPoint.x() == -1 && intPoint.y() == -1 && intPoint.z() == -1 )
     intPoint.set(-9999,-9999,-9999);
-  
+
   return intPoint;
 }
 
@@ -179,6 +199,44 @@ G4V3 RefractionTool::getIntPoint(G4V3 g4_pt,
   pipp = *m_backRot * pipp;
   return G4V3(pipp.x(), pipp.y(), pipp.z());
   
+}
+
+//--------------------------------------------------------//
+// Get the midpoint where the track cross the boundary
+//--------------------------------------------------------//
+G4V3 RefractionTool::getIntMidPoint(G4V3 P0, G4V3 P1)
+{
+
+  // Rotate the points to get iceblock parallel to z
+  G4V3 P0p = *m_initialRot * P0;
+  G4V3 P1p = *m_initialRot * P1;
+
+  // Translate the points such that the bottom face
+  // of the iceblock sits in the x-y plane.
+  G4V3 zshift = m_zshift - G4V3(0,0, m_blockDim.z());
+  G4V3 P0pp = P0p + zshift;
+  G4V3 P1pp = P1p + zshift;
+
+  // Now solve for x-y given z = 0
+  // First get unit vector in direction of
+  // track.
+  G4V3 v     = (P1pp - P0pp).unit();
+
+  // Now get the slope to z = 0
+  G4double t = P0pp.z() / v.z();
+
+  // Now we can calculate x and y
+  G4V3 Pmpp = G4ThreeVector( P0pp.x() - t * v.x(),
+			     P0pp.y() - t * v.y(),
+			     0 );
+
+  // Now rotate back to original coordinate system and return
+  Pmpp -= zshift;  
+  Pmpp = *m_backRot * Pmpp;
+  return Pmpp;
+		
+
+
 }
 
 //--------------------------------------------------------//
@@ -382,7 +440,8 @@ G4RotationMatrix* RefractionTool::getRotationMatrix(G4V3 v0,
 // to simplify the math
 //--------------------------------------------------------//
 G4V3 RefractionTool::getTransmittedField(G4V3 g4_E, 
-					 G4double theta_i)
+					 G4double theta_i,
+					 G4bool iceToAir)
 {
 
   G4V3 E = G4V3(g4_E.x(), g4_E.y(), g4_E.z());
@@ -401,8 +460,8 @@ G4V3 RefractionTool::getTransmittedField(G4V3 g4_E,
   G4V3 Ep = G4V3(Eprime.x(),Eprime.y(),0);
 
   // Get adjusted Es and Ep
-  G4V3 Es_prime = getRefractedPerp(Es, theta_i);
-  G4V3 Ep_prime = getRefractedParallel(Ep, theta_i);
+  G4V3 Es_prime = getRefractedPerp(Es, theta_i, iceToAir);
+  G4V3 Ep_prime = getRefractedParallel(Ep, theta_i, iceToAir);
 
   // Now sum and rotate back
   G4V3 E_prime = getRotatedE(Es_prime+Ep_prime, rotation, true);
@@ -454,30 +513,66 @@ G4RotationMatrix RefractionTool::getRotationMatrixY(double beta)
 //--------------------------------------------------------//
 // Get refracted E-field -- perpindicular component
 //--------------------------------------------------------//
-G4V3 RefractionTool::getRefractedPerp(G4V3 Es, double theta_i)
+G4V3 RefractionTool::getRefractedPerp(G4V3 Es, 
+				      G4double theta_i,
+				      G4bool iceToAir)
 {
 
-  double Esmag      = Es.mag();
-  G4V3 Es_unit = Es.unit();
-  double num        = 2*m_n0*cos(theta_i);
-  double den        = m_n0*cos(theta_i) + sqrt(pow(m_n1,2)-pow(m_n0*sin(theta_i),2));
+  double n0 = m_n0;
+  double n1 = m_n1;
+  if(!iceToAir){
+    n0 = m_n1;
+    n1 = m_n0;
+  };
 
-  return (Esmag * num / den) * Es_unit;
+  double Esmag = Es.mag();
+  G4V3 Es_unit = Es.unit();
+  double num   = 2*n0*cos(theta_i);
+  double den   = n0*cos(theta_i) + sqrt(pow(n1,2)-pow(n0*sin(theta_i),2));
+
+  return (Esmag * num / den) * Es_unit * 
+    getCorrectionFactor(n0, n1, theta_i);
 
 }
 
 //--------------------------------------------------------//
 // Get refracted E-field -- parallel component
 //--------------------------------------------------------//
-G4V3 RefractionTool::getRefractedParallel(G4V3 Ep, double theta_i)
+G4V3 RefractionTool::getRefractedParallel(G4V3 Ep, 
+					  G4double theta_i,
+					  G4bool iceToAir)
 {
 
-  double Epmag   = Ep.mag();
-  G4V3 Ep_unit = Ep.unit();
-  double num = 2*m_n0*m_n1*cos(theta_i);
-  double den = pow(m_n1,2)*cos(theta_i) + m_n0*sqrt(pow(m_n1,2)-pow(m_n0*sin(theta_i),2));
+  double n0 = m_n0;
+  double n1 = m_n1;
+  if(!iceToAir){
+    n0 = m_n1;
+    n1 = m_n0;
+  };
 
-  return (Epmag * num / den) * Ep_unit;
+  double Epmag = Ep.mag();
+  G4V3 Ep_unit = Ep.unit();
+  double num   = 2*n0*n1*cos(theta_i);
+  double den   = pow(n1,2)*cos(theta_i) + n0*sqrt(pow(n1,2)-pow(n0*sin(theta_i),2));
+
+  return (Epmag * num / den) * Ep_unit *
+    getCorrectionFactor(n0, n1, theta_i);;
 
 }
 
+//--------------------------------------------------------//
+// Get correction factor
+//--------------------------------------------------------//
+G4double RefractionTool::getCorrectionFactor(G4double n0,
+					     G4double n1, 
+					     G4double theta_i)
+{
+
+  // The correction factor is only valid when Snell's law is safe.
+  // So impose that condition here
+  if( theta_i > asin(n1/n0) ) return 0;
+  
+  G4double factor = (n1/n0) * sqrt(1-pow(n0*sin(theta_i)/n1,2)) / cos(theta_i);
+  return factor;
+
+}
