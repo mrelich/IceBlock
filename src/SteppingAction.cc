@@ -15,8 +15,8 @@ SteppingAction::SteppingAction(std::ofstream* output,
   m_output = output;
   //m_treeWriter = treeWriter;
   m_ants = ants;
-  //m_trtool = new TRTool(m_nAir, m_n);
-  m_trtool = new TRTool(m_n, m_nAir);
+  m_trtool = new TRTool(m_nAir, m_n);
+  //m_trtool = new TRTool(m_n, m_nAir);
 }
 
 //-----------------------------------------------------------------//
@@ -419,9 +419,7 @@ void SteppingAction::TRFromZHS(const G4Step* aStep)
   // aren't interested in this point, so discard if either 
   // material is undefined
   if(!mat0 || !mat1) return;
-  //if( !(mat1->GetName() == "ICE" && (mat0 != mat1 || m_TRFirstPointFound))) return;
-  if( !(mat1->GetName() == "G4_AIR" && (mat0 != mat1 || m_TRFirstPointFound))) return;
-  G4cout<<mat0->GetName()<<" "<<mat1->GetName()<<G4endl;  
+  if( !(mat1->GetName() == "ICE" && (mat0 != mat1 || m_TRFirstPointFound))) return;
 
   // There is also a contribution from backscatter electrons
   // meaning electrons produced in air above ice that scatter
@@ -437,12 +435,12 @@ void SteppingAction::TRFromZHS(const G4Step* aStep)
   }
 
   // Now print out some info to test ice locations and everything
-  G4cout<<"-------------------------------------------------------"<<G4endl;
-  G4cout<<"P0: "<<P0<<G4endl;
-  G4cout<<"P1: "<<P1<<G4endl;
-  G4cout<<"Mat0: "<<mat0->GetName()<<G4endl;
-  G4cout<<"Mat1: "<<mat1->GetName()<<G4endl;
-  G4cout<<G4endl;
+  //G4cout<<"-------------------------------------------------------"<<G4endl;
+  //G4cout<<"P0: "<<P0<<G4endl;
+  //G4cout<<"P1: "<<P1<<G4endl;
+  //G4cout<<"Mat0: "<<mat0->GetName()<<G4endl;
+  //G4cout<<"Mat1: "<<mat1->GetName()<<G4endl;
+  //G4cout<<G4endl;
   
   // Now go through the calculation for this point. Two cases:
   //    1.) This is the first point -- we just get contribution
@@ -450,30 +448,14 @@ void SteppingAction::TRFromZHS(const G4Step* aStep)
   //    2.) This is the second point -- we get ray from inside Ice
   //        and also the reflected one.
   
-  // Now update whether or not we are working with the first point.
-  // If we are with the first point, then TRFirstPoitnFound
-  // should be false.  If it is the second point then it's true.
-  // Update accordingly.
-  // Check what medium we are in
-  //G4double n   = m_nAir;
-  //G4bool inice = false;
-  //if( !m_TRFirstPointFound );
-  //else{
-  //  n = m_n;
-  //  inice = true;
-  // }
-  //m_TRFirstPointFound = !m_TRFirstPointFound;
-
-  G4double n   = m_n;
-  G4bool inice = true;
+  G4double n   = m_nAir;
+  G4bool inice = false;
   if( !m_TRFirstPointFound );
   else{
-    n = m_nAir;
-    inice = false;
+    n = m_n;
+    inice = true;
   }
   m_TRFirstPointFound = !m_TRFirstPointFound;
-
-  G4cout<<"index: "<<n<<G4endl;
 
   // For now, only count electrons and positrons
   G4Track* track = aStep->GetTrack();
@@ -492,27 +474,6 @@ void SteppingAction::TRFromZHS(const G4Step* aStep)
   // Set the velocity vector in m/s
   G4ThreeVector V = getVelocity(P0,P1,t0,t1);
 
-  // HACK for testing. The idea was to fix the single step
-  // to +/- X cm and compare shape to ZHS paper.  This becomes
-  // complicated though, as you need to swap the geometry 
-  // and many other constants
-  if(false){
-    G4cout<<"Before "<<t0<<" "<<t1<<G4endl;
-    V  =  0.99* m_c * G4ThreeVector(0,0,1);
-    if( mat0->GetName() == "ICE" ){
-      P0 = G4ThreeVector(0,0,-0.05);
-      P1 = G4ThreeVector(0,0,0);
-      t0 = 0; //t0 - (P1-P0).mag() / V.mag();
-      t1 = t0 + (P1-P0).mag() / V.mag();
-    }
-    else{
-      P0 = G4ThreeVector(0,0,0);
-      P1 = G4ThreeVector(0,0,0.05);
-      t0 = (P1-P0).mag() / V.mag();
-      t1 = t0 + (P1-P0).mag() / V.mag();
-    }
-    G4cout<<"After "<<t0<<" "<<t1<<G4endl;
-  }
   
   // Now Get midpoint times and position
   G4ThreeVector Pm = G4ThreeVector( (P0.x() + P1.x())/2.,
@@ -523,6 +484,8 @@ void SteppingAction::TRFromZHS(const G4Step* aStep)
   for(unsigned int iA=0; iA<m_ants->size(); ++iA){
     Antenna* ant = m_ants->at(iA);
     
+    //G4cout<<"\tAntenna: "<<iA<<G4endl;
+
     // Get the vector that defines the direction we want
     // to calculate the electric field. In a homogenous medium,
     // this would be the antenna position. When dealing with refraction
@@ -542,13 +505,15 @@ void SteppingAction::TRFromZHS(const G4Step* aStep)
     for(int it = 0; it<TRR_N; ++it){
       TRRay tr_it = (TRRay) it;
 
+      //if(tr_it != TRR_reflected) continue;
       //if(tr_it != TRR_refracted) continue;
+      //if(tr_it != TRR_direct) continue;
 
       // Handle cases
-      //if( inice && tr_it == TRR_refracted ) continue;
-      //if( !inice && tr_it != TRR_refracted ) continue;
-      if( inice && tr_it != TRR_refracted ) continue;
-      if( !inice && tr_it == TRR_refracted ) continue;
+      if( inice && tr_it == TRR_refracted ) continue;
+      if( !inice && tr_it != TRR_refracted ) continue;
+      //if( inice && tr_it != TRR_refracted ) continue;
+      //if( !inice && tr_it == TRR_refracted ) continue;
 
       // Set the variables
       m_trtool->findPath(Pm, AntPos, t0, t1, theta_i, theta_r, R, u, tD0, tD1, tr_it);
@@ -600,8 +565,6 @@ void SteppingAction::fillForAntenna(Antenna* ant,
   G4double AntTmin  = ant->getTmin() * 1e-9;  // in seconds
   G4double AntTstep = ant->getTStep() * 1e-9; // in seconds
 
-  //G4cout<<"AntTmin: "<<AntTmin<<" "<<(AntTmin + 4000*AntTstep)<<G4endl;
-  
   // Locate what bin our particle falls in
   G4int iFirstBin = 0;
   G4int iLastBin  = int(ant->getN() - 1);

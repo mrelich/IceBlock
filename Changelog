@@ -1,3 +1,7 @@
+2015-08-11 Matt:
+	* Moved geometry from air --> ice
+	* Turned off some of the printing
+
 2015-08-05 Matt:
 	* Creating branch to study transition radiation
 	* Allowing energy to take in float from command line to study 3.6 MeV as done in Paper

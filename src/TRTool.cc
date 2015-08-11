@@ -295,9 +295,11 @@ G4V3 TRTool::getFresnelCorrectedField(G4V3 E,
   if(trr_type == TRR_reflected)
     return getReflectedParallel(Ep, theta_i) + getReflectedPerp(Es, theta_i);
   
-  else if(trr_type == TRR_refracted)
-    return getRefractedParallel(Ep, theta_r) + getRefractedPerp(Es, theta_r);
-
+  else if(trr_type == TRR_refracted){
+    G4V3 Enew = getRefractedParallel(Ep, theta_r) + getRefractedPerp(Es, theta_r);
+    //G4cout<<theta_r * 180/m_pi<<" "<<Enew<<G4endl;
+    return Enew;
+  }
   else{
     G4cout<<"What the hell is going on! You are trying"<<G4endl;
     G4cout<<"to access something else besides direct, "<<G4endl;
@@ -316,8 +318,11 @@ G4V3 TRTool::getRefractedParallel(G4V3 Ep,
 				  G4double theta_r)
 {
 
+  float snellterm =  m_n1/m_n0 * sin(theta_r);
+  if( snellterm > 1 ) snellterm = 1;
+
   double num = 2*m_n1*cos(theta_r);
-  double den = m_n1*sqrt(1-pow(m_n1/m_n0 * sin(theta_r),2)) + m_n0*cos(theta_r);
+  double den = m_n1*sqrt(1-pow(snellterm,2)) + m_n0*cos(theta_r);
   
   return Ep.mag() * num/den * Ep.unit();
 
@@ -331,8 +336,12 @@ G4V3 TRTool::getRefractedPerp(G4V3 Es,
 			      G4double theta_r)
 {
 
+  //if( m_n1/m_n0 * sin(theta_r) > 1 ) return G4V3(0,0,0);
+  float snellterm =  m_n1/m_n0 * sin(theta_r);
+  if( snellterm > 1 ) snellterm = 1;
+
   double num = 2*m_n1*cos(theta_r);
-  double den = m_n0*sqrt(1-pow(m_n1/m_n0 * sin(theta_r),2)) + m_n1*cos(theta_r);
+  double den = m_n0*sqrt(1-pow(snellterm,2)) + m_n1*cos(theta_r);
   
   return Es.mag() * num/den * Es.unit();
 
@@ -344,9 +353,12 @@ G4V3 TRTool::getRefractedPerp(G4V3 Es,
 G4V3 TRTool::getReflectedParallel(G4V3 Ep,
 				  G4double theta_i)
 {
-  
-  double num = m_n0 * cos(theta_i) - m_n1 * sqrt(1 - pow(m_n1/m_n0 * sin(theta_i),2));
-  double den = m_n0 * cos(theta_i) + m_n1 * sqrt(1 - pow(m_n1/m_n0 * sin(theta_i),2));
+
+  // Total reflection, forget Fresnel...
+  if( m_n1/m_n0 * sin(theta_i) > 1 )  return Ep;  
+
+  double num = m_n1 * cos(theta_i) - m_n0 * sqrt(1 - pow(m_n0/m_n1 * sin(theta_i),2));
+  double den = m_n1 * cos(theta_i) + m_n0 * sqrt(1 - pow(m_n0/m_n1 * sin(theta_i),2));
 
   return Ep.mag() * num/den * Ep.unit();
 
@@ -358,9 +370,12 @@ G4V3 TRTool::getReflectedParallel(G4V3 Ep,
 G4V3 TRTool::getReflectedPerp(G4V3 Es,
 			      G4double theta_i)
 {
+
+  // Total reflection, forget Fresnel...
+  if( m_n1/m_n0 * sin(theta_i) > 1 )  return Es;
   
-  double num = m_n1 * cos(theta_i) - m_n0 * sqrt(1 - pow(m_n1/m_n0 * sin(theta_i),2));
-  double den = m_n1 * cos(theta_i) + m_n0 * sqrt(1 - pow(m_n1/m_n0 * sin(theta_i),2));
+  double num = m_n0 * cos(theta_i) - m_n1 * sqrt(1 - pow(m_n0/m_n1 * sin(theta_i),2));
+  double den = m_n0 * cos(theta_i) + m_n1 * sqrt(1 - pow(m_n0/m_n1 * sin(theta_i),2));
 
   return Es.mag() * num/den * Es.unit();
 

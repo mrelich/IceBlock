@@ -98,7 +98,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   int nbunches = m_bp->isInit() ? m_bp->getN() : m_nbunch;
 
   // NEW: Specify injection point. Ice starts at (0,0,0)
-  G4double z_inj = -1 * mm;
+  G4double z_inj = -10 * cm;
 
   // Loop over the bunches
   for(int nb = 0; nb < nbunches; ++nb){

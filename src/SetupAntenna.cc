@@ -18,13 +18,14 @@ SetupAntenna::SetupAntenna(std::string infile)
 
   // Scale factor for the timing
   //G4double sf = 1.78 / 3.e8 * 1e9;
-  G4double sf = 1 / 3.e8 * 1e9;
+  G4double sf = 1.3 / 3.e8 * 1e9;
+  //G4double sf = 1 / 3.e8 * 1e9;
 
   // Trying to match some ZHS results. 
   // So put the antenna at R = 100m and
   // for several angles.
   //G4double R = 1000;
-  G4double R = 1000;
+  G4double R = 10;
   //G4double R = 7;
   //G4double R = 100;
 
@@ -64,7 +65,7 @@ SetupAntenna::SetupAntenna(std::string infile)
 				  0,
 				  R*cos(angle),
 				  (int) (R * sf - 10),
-				  2000,
+				  20000,
 				  0.02,
 				  0,0,0));
   }// end loop over angles

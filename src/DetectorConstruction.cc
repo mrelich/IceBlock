@@ -128,7 +128,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //G4double iceblock_y = 30.0 * cm;
   //G4double iceblock_z = 30.0 * cm;
 
-  G4ThreeVector iceblock_pos = G4ThreeVector(0,0,-0.5*iceblock_z);
+  G4ThreeVector iceblock_pos = G4ThreeVector(0,0,0.5*iceblock_z);
 
   // Iceblock is a box
   G4Box* iceblock_box = new G4Box("ICEBLOCK",
